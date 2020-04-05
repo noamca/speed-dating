@@ -1,0 +1,72 @@
+{
+  "round": [
+    [
+      {
+        "male": "Yossi",
+        "female": "Dina"
+      },
+      {
+        "male": "Avi",
+        "female": "Shula"
+      },
+      {
+        "male": "Josh",
+        "female": "Yafit"
+      },
+      {
+        "male": "Danny"
+      }
+    ],
+    [
+      {
+        "male": "Avi",
+        "female": "Dina"
+      },
+      {
+        "male": "Josh",
+        "female": "Shula"
+      },
+      {
+        "male": "Danny",
+        "female": "Yafit"
+      },
+      {
+        "male": "Yossi"
+      }
+    ],
+    [
+      {
+        "male": "Josh",
+        "female": "Dina"
+      },
+      {
+        "male": "Danny",
+        "female": "Shula"
+      },
+      {
+        "male": "Yossi",
+        "female": "Yafit"
+      },
+      {
+        "male": "Avi"
+      }
+    ],
+    [
+      {
+        "male": "Danny",
+        "female": "Dina"
+      },
+      {
+        "male": "Yossi",
+        "female": "Shula"
+      },
+      {
+        "male": "Avi",
+        "female": "Yafit"
+      },
+      {
+        "male": "Josh"
+      }
+    ]
+  ]
+}

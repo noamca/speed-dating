@@ -17,7 +17,7 @@
     "build:examples:screenshare": "copyfiles -f examples/screenshare/src/helpers.js examples/screenshare/public && browserify examples/screenshare/src/index.js > examples/screenshare/public/index.js",
     "build:examples:localmediacontrols": "copyfiles -f examples/localmediacontrols/src/helpers.js examples/localmediacontrols/public && browserify examples/localmediacontrols/src/index.js > examples/localmediacontrols/public/index.js",
     "build:examples:remotereconnection": "copyfiles -f examples/remotereconnection/src/helpers.js examples/remotereconnection/public && browserify examples/remotereconnection/src/index.js > examples/remotereconnection/public/index.js",
-    "build:quickstart": "browserify quickstart/src/index.js > quickstart/public/index.js",
+    "build:quickstart": "browserify application/src/index.js > application/public/index.js",
     "clean": "npm-run-all clean:*",
     "clean:examples": "npm-run-all clean:examples:*",
     "clean:examples:bandwidthconstraints": "rimraf examples/bandwidthconstraints/public/index.js examples/bandwidthconstraints/public/helpers.js",
@@ -31,8 +31,9 @@
     "clean:examples:screenshare": "rimraf examples/screenshare/public/index.js examples/screenshare/public/helpers.js",
     "clean:examples:localmediacontrols": "rimraf examples/localmediacontrols/public/index.js examples/localmediacontrols/public/helpers.js",
     "clean:examples:remotereconnection": "rimraf examples/remotereconnection/public/index.js examples/remotereconnection/public/helpers.js",
-    "clean:quickstart": "rimraf quickstart/public/index.js",
-    "start": "npm run clean && npm run build && node server"
+    "clean:quickstart": "rimraf application/public/index.js",
+    "startall": "npm run clean && npm run build && node server",
+    "start": "npm run build:quickstart && node server"
   },
   "repository": {
     "type": "git",
@@ -57,6 +58,7 @@
     "dotenv": "^4.0.0",
     "express": "^4.15.2",
     "prismjs": "^1.6.0",
+    "socket.io": "^2.3.0",
     "stackblur-canvas": "^1.4.0",
     "twilio": "^3.19.1",
     "twilio-video": "^2.1.0"

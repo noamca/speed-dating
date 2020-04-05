@@ -1,20 +1,102 @@
 @import url(https://fonts.googleapis.com/css?family=Share+Tech+Mono);
 
+body {
+  direction: rtl;
+  background-color: #212529 !important;
+  color: aliceblue;
+}
+
+h1,h2,h3,h4,h5,h6 {
+  color: aliceblue !important;
+}
+
+hr {
+    border: 2px solid #b80d06 !important;
+}
+
+.fr {
+  float: right;
+}
+
+#move-to-room {
+    width: 66%;
+    display: initial;
+}
+#slctRoomsNames{
+    vertical-align: middle;
+}
+
+.text-div {
+    display: flex;
+    margin-top: 30px;
+    font-size: 42px;
+    color: white;
+}
+
+.al-ce {
+    align-items: center !important;
+}
+
+#messages {
+  min-height: 455px;
+  background-color: azure;
+  border: solid;
+  border-width: thin;
+  border-color: #b80d06;
+  border-radius: 15px;
+}
+
+#send-msg {
+  text-align: right;
+  padding-top: 5px;
+}
+
+.chat-field {
+  border-radius: 5px;
+  width: 69%;
+  height: 38px;
+  vertical-align: middle;
+}
+ 
+
 div#controls {
   display: flex;
   justify-content: center;
   flex-direction: row;
 }
 
-div#remote-media {
+#modorate-media {
   display: flex;
   flex-direction: row;
   justify-content: center;
-  height: 43%;
-  width: 100%;
-  background-color: #fff;
+  min-height: 500px;
+  background-color: #212529;
+  color: aliceblue;
   text-align: center;
-  margin: auto;
+  margin-right: 15px;
+  border: solid;
+  border-width: thin;
+  border-color: #b80d06;
+  border-radius: 15px;
+  margin-right: 15px;
+  
+}
+
+#remote-media {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  min-height: 200px;
+  width: 100%;
+  background-color: #212529;
+  text-align: center;
+  margin-right:30px;
+  margin-left:30px;
+  border: solid;
+  border-width: thin;
+  border-color: #b80d06;
+  border-radius: 15px;
+  
 }
 
 div#remote-media video {

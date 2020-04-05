@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>ספיד דייט ישראל</title>
+    <link rel="stylesheet" href="index.css" />
+    <link
+      rel="stylesheet"  href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"  integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh"   crossorigin="anonymous" />
+  </head>
+  <body>
+    <div id='countdowntimer'></div>
+    <div class="jumbotron">
+      <div class="container-fluid">
+        <h1 class="display-3">ברוכים הבאים לספיד דייט ישראל</h1>
+        <!--<p class="lead">For more examples click <a href="/examples">here</a></p>-->
+      </div>
+    </div>
+    <div id="modorate-media"></div>
+    <div id="remote-media"></div>
+    <div id="controls" class="container-fluid">
+      <div id="preview">
+        <p class="instructions">שלום לך משתמש יקר</p>
+        <div>
+          <div id="local-media"></div>
+          <button id="button-preview" class="btn btn-primary btn-block">
+            <image id="button-preview-image"  src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9Im5vIj8+Cjxzdmcgd2lkdGg9IjE3cHgiIGhlaWdodD0iMTJweCIgdmlld0JveD0iMCAwIDE3IDEyIiB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIHhtbG5zOnNrZXRjaD0iaHR0cDovL3d3dy5ib2hlbWlhbmNvZGluZy5jb20vc2tldGNoL25zIj4KICAgIDwhLS0gR2VuZXJhdG9yOiBTa2V0Y2ggMy4zLjEgKDEyMDAyKSAtIGh0dHA6Ly93d3cuYm9oZW1pYW5jb2RpbmcuY29tL3NrZXRjaCAtLT4KICAgIDx0aXRsZT5GaWxsIDM0PC90aXRsZT4KICAgIDxkZXNjPkNyZWF0ZWQgd2l0aCBTa2V0Y2guPC9kZXNjPgogICAgPGRlZnM+PC9kZWZzPgogICAgPGcgaWQ9IlBhZ2UtMSIgc3Ryb2tlPSJub25lIiBzdHJva2Utd2lkdGg9IjEiIGZpbGw9Im5vbmUiIGZpbGwtcnVsZT0iZXZlbm9kZCIgc2tldGNoOnR5cGU9Ik1TUGFnZSI+CiAgICAgICAgPGcgaWQ9ImN1bW1hY2siIHNrZXRjaDp0eXBlPSJNU0xheWVyR3JvdXAiIHRyYW5zZm9ybT0idHJhbnNsYXRlKC0xMjUuMDAwMDAwLCAtMTkwOS4wMDAwMDApIiBmaWxsPSIjMEEwQjA5Ij4KICAgICAgICAgICAgPHBhdGggZD0iTTEzNi40NzEsMTkxOS44NyBMMTM2LjQ3MSwxOTE5LjYyIEwxMjUuNzY3LDE5MTkuNjIgTDEyNS43NjcsMTkxMC4wOCBMMTM2LjIyMSwxOTEwLjA4IEwxMzYuMjIxLDE5MTQuMTUgTDE0MC43ODUsMTkxMS4yNyBMMTQwLjc4NSwxOTE4LjQyIEwxMzYuMjIxLDE5MTUuNTUgTDEzNi4yMjEsMTkxOS44NyBMMTM2LjQ3MSwxOTE5Ljg3IEwxMzYuNDcxLDE5MTkuNjIgTDEzNi40NzEsMTkxOS44NyBMMTM2LjcyMSwxOTE5Ljg3IEwxMzYuNzIxLDE5MTYuNDUgTDE0MS4yODUsMTkxOS4zMyBMMTQxLjI4NSwxOTEwLjM3IEwxMzYuNzIxLDE5MTMuMjQgTDEzNi43MjEsMTkwOS41OCBMMTI1LjI2NywxOTA5LjU4IEwxMjUuMjY3LDE5MjAuMTIgTDEzNi43MjEsMTkyMC4xMiBMMTM2LjcyMSwxOTE5Ljg3IEwxMzYuNDcxLDE5MTkuODciIGlkPSJGaWxsLTM0IiBza2V0Y2g6dHlwZT0iTVNTaGFwZUdyb3VwIj48L3BhdGg+CiAgICAgICAgPC9nPgogICAgPC9nPgo8L3N2Zz4="></image> הצג אותי
+          </button>
+        </div>
+      </div>
+      <div id="room-controls">
+        <p class="instructions">שם החדר</p>
+        <input  id="room-name"  type="text" value="lobby3"  placeholder="Enter a room name" />
+        <button id="button-join" type="submit"  class="btn btn-primary btn-block">הצטרף</button>
+        <button id="button-start-meeting" type="submit"  class="btn btn-primary btn-block">התחל פגישות</button>
+        <button id="button-load-participant" type="submit"  class="btn btn-primary btn-block">Load Participants</button>
+        
+        <button id="button-leave" type="submit"  class="btn btn-primary btn-block" > צא מהחדר </button>
+      </div>
+      <div id="log"></div>
+    </div>
+
+    <div class="col-sm-6">
+      <div class="card">
+        <div class="card-block">
+          <h4 class="card-title">Local Screen</h4>
+          <video id="screenpreview" autoplay height="480" width="640"></video>
+          <button id="capturescreen" class="btn btn-primary btn-block"> Capture Screen </button>
+          <button id="stopscreencapture" class="btn btn-primary btn-block"> Stop Screen Capture </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-sm-6">
+      <div id="messages"></div>
+      <form id="chatform">
+      <input type="text" id="messageTxt">
+      <input type="submit">       
+
+      </form>
+    </div>
+
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+    <script src="index.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
+    <script>
+    
+    
+
+
+
+
+   
+
+
+ 
+    </script>
+  </body>
+</html>
