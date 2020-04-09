@@ -1,0 +1,8 @@
+http://localhost:3000/application/lobby.html?userName=נועם כסיף&gender=m&id=1000
+http://localhost:3000/application/lobby.html?userName=שער אשר&gender=m&id=1001
+http://localhost:3000/application/lobby.html?userName=יוסי הרוש&gender=m&id=1002
+
+http://localhost:3000/application/lobby.html?userName=דינה שטיין&gender=f&id=1003
+http://localhost:3000/application/lobby.html?userName=מיה ללוש&gender=f&id=1004
+http://localhost:3000/application/lobby.html?userName=ורד איווניר&gender=f&id=1005
+

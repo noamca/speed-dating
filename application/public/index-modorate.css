@@ -101,7 +101,7 @@ div#controls {
 
 div#remote-media video {
   border: 1px solid #272726;
-  max-width: 80% !important;
+  max-width: 30% !important;
   background-repeat: no-repeat;
   background-color: lightgrey !important;
   background-image: url("https://static0.twilio.com/marketing/bundles/archetype/img/logo-wordmark.svg");

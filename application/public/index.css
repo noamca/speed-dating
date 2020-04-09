@@ -13,6 +13,18 @@ h1,h2,h3,h4,h5,h6 {
 .fr {
   float: right;
 }
+.text {
+  color: white;
+  text-align: right;
+  direction: rtl;
+  float: right;
+  padding-right: 7px;
+}
+
+.textDiv {
+  color:white !important;
+  text-align: center;
+}
 
 #messages {
   min-height: 455px;
@@ -60,6 +72,7 @@ div#controls {
 }
 
 #remote-media {
+  color: white;
   display: flex;
   flex-direction: row;
   justify-content: center;
@@ -78,7 +91,7 @@ div#controls {
 
 div#remote-media video {
   border: 1px solid #272726;
-  max-width: 80% !important;
+  max-width: 30% !important;
   background-repeat: no-repeat;
   background-color: lightgrey !important;
   background-image: url("https://static0.twilio.com/marketing/bundles/archetype/img/logo-wordmark.svg");
@@ -176,4 +189,21 @@ div#log p {
   margin-left: 1em;
   text-indent: -1.25em;
   width: 90%;
+}
+
+.oneOnoneWindow {
+  display: flex; 
+  /* flex-direction: row; */
+  justify-content: center;
+  min-height: 600px !important;
+  width: 90% !important;
+  background-color: #212529;
+  text-align: center;
+  /* margin-right: 30px; */
+  /* margin-left: 45px; */
+  border: solid;
+  border-width: thin;
+  border-color: #b80d06;
+  border-radius: 15px;
+  padding: 20px !important;  
 }

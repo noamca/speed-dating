@@ -15,54 +15,44 @@ var AccessToken = require("twilio").jwt.AccessToken;
 var VideoGrant = AccessToken.VideoGrant;
 var express = require("express");
 const fs = require('fs');
+var mysql = require('mysql');
+var con = mysql.createConnection({
+  host: "localhost",
+  user: "root",
+  password: ""
+});
 
-// Max. period that a Participant is allowed to be in a Room (currently 14400 seconds or 4 hours)
-const MAX_ALLOWED_SESSION_DURATION = 14400;
+con.connect(function(err) {
+  if (err) throw err;
+  console.log("Mysql Connected!");
+});
+
+// Max. period that a Participant is allowed to be in a Room (currently 5000 seconds or 1.5 hours)
+const MAX_ALLOWED_SESSION_DURATION = 5000;
 
 // Create Express webapp.
 var app = express();
-// var server  = app.listen(1337);
-// var io      = require('socket.io').listen(server);
-
-// Set up the paths for the examples.
-[
-  "bandwidthconstraints",
-  "codecpreferences",
-  "dominantspeaker",
-  "localvideofilter",
-  "localvideosnapshot",
-  "mediadevices",
-  "networkquality",
-  "reconnection",
-  "screenshare",
-  "localmediacontrols",
-  "remotereconnection"
-].forEach(function(example) {
-  var examplePath = path.join(__dirname, `../examples/${example}/public`);
-  app.use(`/${example}`, express.static(examplePath));
-});
 
 // Set up the path for the application.
 var applicationPath = path.join(__dirname, "../application/public");
 app.use("/application", express.static(applicationPath));
-
-// Set up the path for the examples page.
-var examplesPath = path.join(__dirname, "../examples");
-app.use("/examples", express.static(examplesPath));
 
 /**
  * Default to the Date application.
  */
 app.get("/", function(request, response) {
   var modorator = request.query.modorator || 0;
-  response.redirect("/application/lobby.html?modorator=" + modorator);
+  var userName = request.query.userName || 0;
+  var gender = request.query.gender || 0;
+  var Id = request.query.id || 0;
+  response.redirect("/application/lobby.html?userName=" + userName + "&gender=" + gender + "&id=" + Id);
 });
 
 app.get("/room", function(request, response) {
   var userName = request.query.userName || 0;
   var gender = request.query.gender || 0;
-  //response.redirect("/application/room.html?userName=" + userName + "&gender=" + gender);
-  response.redirect("/application/room.html");
+  var r = request.query.r || 0;
+  response.redirect("/application/room.html?r=" + r + "&userName=" + userName + "&gender=" + gender);
 });
 
 app.get("/modorator", function(request, response) {
@@ -91,14 +81,16 @@ app.get("/stop-event",function(request, response) {
   fs.writeFileSync('event.json', event, (err) => {
     if (err) throw err;
     console.log('event stop file written');
+    response.send("1");
   });
 });
 
 app.get("/check-event",function(request, response) {
   fs.readFile('event.json', (err, data) => {
     if (err) throw err;
-    response.send(data);
+    
   });
+  response.send(data);
 });
 
 
@@ -107,21 +99,37 @@ app.get("/check-event",function(request, response) {
 // save participants data into JSON format 
 app.get("/save-participants",function(request, response) {
   //var participants = request.query.participantsIds;
-  var participants = request.query.participantsIds;
-  console.log(participants);
-  // fs.writeFileSync('participants.json', participants, (err) => {
-  //   if (err) throw err;
-  //   console.log('Data written to file');
-  // });
+  var rooms = request.query.rooms;
+  console.log(rooms);
+  fs.writeFileSync('rooms.json', rooms, (err) => {
+    if (err) throw err;
+    console.log('Data written to file');
+    
+  });
+  response.send("1");
 });
 
 app.get("/load-participants",function(request, response) {
-  fs.readFile('participants.json', (err, data) => {
+  var dataSend;
+  fs.readFile('rooms.json', (err, data) => {
     if (err) throw err;
-    response.send(data);
+    response.send(new Buffer(data));
+    
   });
-
 });
+
+
+app.get("/profile",function(request, response) {
+  var id = request.query.id;
+  var sql = "SELECT * FROM speedate.responder_users where id=" + id;
+  con.query(sql , function (err, result) {
+    if (err) throw err;
+    response.send(result[0]);
+  });
+});
+
+
+
 
 // ----------------- common functions ---------------------------
 
@@ -135,10 +143,10 @@ app.get("/token", function(request, response) {
   var modorator = request.query.modorator || 0;
   var userName = request.query.userName || "";
   var gender = request.query.gender || "";
+  var id = request.query.id || "";
 
-  //var identity = request.query.identity || randomName();
   var time = new Date().getTime();
-  var identity = userName + "#" + gender + "#" + modorator + "#" + time;
+  var identity = userName + "#" + gender + "#" + modorator + "#" + id;
 
   // Create an access token which we will sign and return to the client,
   // containing the grant we just created.
@@ -172,7 +180,7 @@ var port = process.env.PORT || 3000;
 server.listen(port, function() {
   console.log("Express server running on *:" + port);
 });
-var io      = require('socket.io').listen(server);
+var io  = require('socket.io').listen(server);
 
 
 io.on('connection', function(socket){
@@ -185,4 +193,28 @@ io.on('connection', function(socket){
     //console.log('message: ' + msg);
     io.emit('chat message', msg);
   });
+
+  socket.on('start meeting', function(msg){
+    //console.log('message: ' + msg);
+    io.emit('start meeting', msg);
+  });  
+
+  socket.on('ClientTimer', function(msg){
+    //console.log('message: ' + msg);
+    io.emit('ClientTimer', msg);
+  });  
+
+  socket.on('buzzer', function(msg){
+    //console.log('message: ' + msg);
+    io.emit('buzzer', msg);
+  });  
+
+  socket.on('backToLobby', function(msg){
+    //console.log('message: ' + msg);
+    io.emit('backToLobby', msg);
+  });  
+
+
+
+
 });

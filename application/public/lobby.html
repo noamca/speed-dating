@@ -15,17 +15,18 @@
                 <div class="col-sm-1 fr">
                     <img src="logo.png" style="width: 90px;">
                 </div>
-                <div class="col-sm-11 fr">
+                <div class="col-sm-9 fr">
                         <h1 align="center">ברוכים הבאים לספיד דייט ישראל</h1>
-                        <h2 align="center">מפגש 135</h2>
-                </div>
-                <div class="row">
-                    <div class="col-sm-12"><h4 align="center">שלום לך יוסי - הנך נמצא בלובי</h4></div>
-                </div>            
-            
-            
+                                       </div>
+
+                <div class="col-sm-2 fr"id='countdowntimer'></div>
         </div>
     </div>
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="textDiv" id='txtUserName'></div> - הנך נמצא בלובי
+        </div>
+    </div>   
 
     <div class="row">
         <div class="col-sm-1 fr"></div>
@@ -38,7 +39,7 @@
             <div id="send-msg">
                 <form id="chatform">
                     <input type="text" id="messageTxt" class="chat-field">
-                    <button id="button-join" type="submit"  class="btn btn-primary" style="width:28%" onclick="document.chatform.submit()">שלח</button>
+                    <input type="submit"  class="btn btn-primary" style="width:28%" value="שלח">
                           
                 </form>            
             </div>
@@ -104,7 +105,12 @@
     </div>
     
     <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
-    <script src="index.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
-  </body>
+    <script>
+        var socket = io();
+      </script>
+      
+       
+          <script src="index-client.js"></script>    
+ </body>
 </html>
