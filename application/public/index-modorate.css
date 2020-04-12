@@ -13,9 +13,21 @@ h1,h2,h3,h4,h5,h6 {
 hr {
     border: 2px solid #b80d06 !important;
 }
+.al-ce {
+  text-align: center;
+}
 
 .fr {
   float: right;
+}
+.text-div {
+  color:white !important;
+  text-align: center;
+}
+.text-div-small {
+  color:white !important;
+  text-align: center;
+  font-size: 14px;
 }
 
 #move-to-room {

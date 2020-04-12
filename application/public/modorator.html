@@ -19,10 +19,7 @@
                         <h1 align="center">ספיד דייט - מסך ניהול והנחייה</h1>
                         <h2 align="center">מפגש 135</h2>
                 </div>
-                <div class="row">
-                    <div class="col-sm-12"><h4 align="center">הנך נמצא בלובי</h4></div>
-                </div>            
-            
+           
             
         </div>
     </div>
@@ -30,35 +27,37 @@
     <div class="row">
         <div class="col-sm-3 fr">
             <button id="startConversation" class="btn btn-primary btn-block"> התחל מפגש</button>
-            <button id="stopConversation" class="btn btn-primary btn-block" style="display:none"> סיים מפגש</button>
+            <button id="button-start-meeting" class="btn btn-primary btn-block">התחל מפגשים אישיים</button>
+            <button id="buttonBreak" class="btn btn-primary btn-block" >חזרה ללובי - הפסקה</button>
+            <button id="buttonContinueMeetings" class="btn btn-primary btn-block">המשך פגישות</button>
+            <button id="stopConversation" class="btn btn-primary btn-block"> סיים מפגש</button>
+            <br>
             <button id="capturescreen" class="btn btn-primary btn-block"> שתף מסך </button>
             <button id="stopScreenCapture" class="btn btn-primary btn-block"> הפסק שיתוף מסך </button>
+            <br>
+            <button id="buttonDisconnectMe" class="btn btn-primary btn-block">  התנתק </button>
+            <button id="takeControl" class="btn btn-primary btn-block"> השתלט על המסך </button>
+
+            <!--
             <button id="startVideoCapture" class="btn btn-primary btn-block"> שתף וידאו </button>
             <button id="stopVideoCapture" class="btn btn-primary btn-block"> הפסק שיתוף וידאו </button>
+            <br>
             <button id="startAudioCapture" class="btn btn-primary btn-block"> שתף קול </button>
             <button id="stopAudioCapture" class="btn btn-primary btn-block"> הפסק שיתוף קול </button>
-            <button id="button-start-meeting" class="btn btn-primary btn-block">התחל מפגשים אישיים</button>
+            <br>
             <button id="button-test" class="btn btn-primary btn-block">Test</button>
+            -->
             <div class="col-sm-12"><hr></div>
-            <div class="col-sm-12">
-                <select name='roomsNames' id='slctRoomsNames'>
-                    <option value='lobby'>לובי</option>
-                    <option value='room1'>חדר 1</option>
-                    <option value='room2'>חדר 2</option>
-                    <option value='room3'>חדר 3</option>
-                    <option value='room1'>חדר 4</option>
-                    <option value='room1'>חדר 5</option>
-                </select>
-                <button id="move-to-room" class="btn btn-primary btn-block"> עבור לחדר</button>
-            </div>
-            <div class="col-sm-12 text-div" >פגישה מספר: <span id='meeting-number'>1</span> </div>
-            <div class="col-sm-12 text-div al-ce"><span id='countdowntimerModorator'>00:00</span> </div>
+            <div class="col-sm-12 text-div-small" >פגישה מספר: </div>
+            <div class="col-sm-12 text-div-small" ><input type="text" id="txtMeetingNumber" style="width: 30px;"> </div>
+             
+            <div class="col-sm-12 text-div al-ce"><span id='countdowntimerModorator' class="text-div">00:00</span> </div>
             
             
 
         </div>
         <div class="col-sm-6 fr">
-            <div id="modorate-media">Modorate Window</div>
+            <div id="modorate-media"></div>
         </div>
            
         <div class="col-sm-3 fr">
@@ -92,8 +91,12 @@
     <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
     <script>
-        var socket = io();
-      </script>
+        //var socket = io();
+        var url = document.location.href
+        var urlParts = url.replace('http://','').replace('https://','').split(/[/?#]/);
+        var domain = urlParts[0];
+        var socket = io.connect('https://' + domain);
+     </script>
       
                
           <script src="index.js"></script>    

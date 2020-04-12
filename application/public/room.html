@@ -20,7 +20,7 @@
                     <div class="textDiv" id='txtUserName'></div>
                 </div>
 
-                <div class="col-sm-2 fr textDiv" id='countdowntimer'></div>
+                <div class="col-sm-2 fr textDiv" id="countdowntimer"></div>
         </div>
     </div>
     <div class="row">
@@ -28,26 +28,28 @@
     </div>   
 
     <div class="row">
+
+      <div class="col-sm-6 fr">
+        <div id="modorate-media"></div>
+        <div id="remote-media" class="oneOnoneWindow" style="display:none">&nbsp;</div>
+      </div>
+
         <div class="col-sm-3 fr">
           <div class="row">
             <div class="col-sm-12 fr">פרופיל</div>
           </div>
           <div class="row" id='profileContents'>
           </div>  
-
         </div>
-        <div class="col-sm-6 fr">
-          <div id="modorate-media"></div>
-          <div id="remote-media" class="oneOnoneWindow" style="display:none">&nbsp;</div>
-          
-        </div>
+       
            
         <div class="col-sm-3 fr">
-            
             <div id="send-msg">
+                <div class="row textDiv" margin-l-r>הערה על המועמד/ת</div>
                 <form id="comments">
                     <textarea id="messageTxt"  cols=30 rows=10></textarea>
-                </form>            
+                </form>  
+                <div class="row textDiv"><button id="saveRemark" class="btn btn-primary margin-l-r">שמירה</button></div>          
             </div>
         </div>
       
@@ -63,7 +65,12 @@
     <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
     <script>
-        var socket = io();
+        //var socket = io();
+        var url = document.location.href
+        var urlParts = url.replace('http://','').replace('https://','').split(/[/?#]/);
+        var domain = urlParts[0];
+        var socket = io.connect('https://' + domain);
+  
       </script>
       
      

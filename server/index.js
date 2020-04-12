@@ -9,7 +9,7 @@
  */
 require("dotenv").load();
 
-var http = require("http");
+var http = require("https");
 var path = require("path");
 var AccessToken = require("twilio").jwt.AccessToken;
 var VideoGrant = AccessToken.VideoGrant;
@@ -21,6 +21,11 @@ var con = mysql.createConnection({
   user: "root",
   password: ""
 });
+
+const SSLoptions = {
+  key: fs.readFileSync('key.pem'),
+  cert: fs.readFileSync('cert.pem')
+};
 
 con.connect(function(err) {
   if (err) throw err;
@@ -59,6 +64,10 @@ app.get("/modorator", function(request, response) {
   var userName = request.query.userName || 0;
   var gender = request.query.gender || 0;
   response.redirect("/application/modorator.html?userName=" + userName + "&gender=" + gender);
+});
+
+app.get("/thanks", function(request, response) {
+  response.sendFile('/application/public/thanks.html');
 });
 
 
@@ -102,7 +111,7 @@ app.get("/save-participants",function(request, response) {
   var rooms = request.query.rooms;
   console.log(rooms);
   fs.writeFileSync('rooms.json', rooms, (err) => {
-    if (err) throw err;
+    //if (err) throw err;
     console.log('Data written to file');
     
   });
@@ -112,7 +121,7 @@ app.get("/save-participants",function(request, response) {
 app.get("/load-participants",function(request, response) {
   var dataSend;
   fs.readFile('rooms.json', (err, data) => {
-    if (err) throw err;
+    //if (err) throw err;
     response.send(new Buffer(data));
     
   });
@@ -121,10 +130,49 @@ app.get("/load-participants",function(request, response) {
 
 app.get("/profile",function(request, response) {
   var id = request.query.id;
-  var sql = "SELECT * FROM speedate.responder_users where id=" + id;
+  if( id != null && !isNaN(id)) {
+    id = parseInt(id)
+	  if(isNaN(id)) {id=0}
+    var sql = "SELECT * FROM speedate.responder_users where id=" + id;
+    console.log(sql);
+    con.query(sql , function (err, result) {
+      //if (err) throw err;
+      response.send(result[0]);
+    });
+  }
+  else{
+    response.send(201);
+  }
+
+});
+
+app.get("/read-rem",function(request, response) {
+  var id = request.query.id;
+  var userId = request.query.user_id;
+  if(isNaN(userId)) userId=0;
+  var sql = "SELECT * FROM speedate.users_remarks where my_id=" + id + " and user_id=" + userId;
+  console.log(sql);
   con.query(sql , function (err, result) {
-    if (err) throw err;
+    //if (err) throw err;
     response.send(result[0]);
+  });
+});
+
+app.get("/save-rem",function(request, response) {
+  var id = request.query.id;
+  var userId = request.query.user-id;
+  var remarkId = request.query.remark-id;
+  var remarkText = request.query.remark-text;
+  if(remarkId == 0) {
+    var sql = "INSERT INTO speedate.users_remarks SET my_id=" + id + ",user_id=" + userId + ",remark='" + remarkText + "'";
+  }
+  else {
+    var sql = "UPDATE speedate.users_remarks SET my_id=" + id + ",user_id=" + userId + ",remark='" + remarkText + "' WHERE rid=" + remarkId;
+  }
+	console.log(sql);
+  con.query(sql , function (err) {
+    //if (err) throw err;
+    response.send('1');
   });
 });
 
@@ -146,7 +194,7 @@ app.get("/token", function(request, response) {
   var id = request.query.id || "";
 
   var time = new Date().getTime();
-  var identity = userName + "#" + gender + "#" + modorator + "#" + id;
+  var identity = userName + "#" + gender + "#" + modorator + "#" + id + "#" + time;
 
   // Create an access token which we will sign and return to the client,
   // containing the grant we just created.
@@ -174,8 +222,16 @@ app.get("/token", function(request, response) {
   });
 });
 
-// Create http server and run it.
-var server = http.createServer(app);
+
+var server = http.createServer(
+	{
+  key: fs.readFileSync('key.pem'),
+  cert: fs.readFileSync('cert.pem')
+},app);
+
+//var server = http.createServer(app);
+
+
 var port = process.env.PORT || 3000;
 server.listen(port, function() {
   console.log("Express server running on *:" + port);
@@ -213,6 +269,33 @@ io.on('connection', function(socket){
     //console.log('message: ' + msg);
     io.emit('backToLobby', msg);
   });  
+
+  socket.on('unsharescreen', function(msg){
+    //console.log('message: ' + msg);
+    io.emit('unsharescreen', msg);
+  });  
+
+  socket.on('breakRound', function(msg){
+    //console.log('message: ' + msg);
+    io.emit('breakRound', msg);
+  });  
+
+  socket.on('EndOfMeeting', function(msg){
+    //console.log('message: ' + msg);
+    io.emit('EndOfMeeting', msg);
+  });  
+
+  socket.on('clearParticipantWindow', function(msg){
+    //console.log('message: ' + msg);
+    io.emit('clearParticipantWindow', msg);
+  });  
+
+  socket.on('takeControl', function(msg){
+    socket.broadcast.emit('takeControl', "1");
+  });  
+
+  
+
 
 
 

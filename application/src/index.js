@@ -14,14 +14,14 @@ var gender;
 var url;
 var urlMeeting;
 var participantsIds=[];
-//var socket = io();
 var meetingNumber = 0;
 var maxMeetings = 1;
 var rooms = [];
 var mensList = [];
 var womensList = [];
 var lastSeconds;
-var meetingDuration = 15000;
+var meetingDuration = 90000; 
+var meetingInterval;
 
 modorator = getUrlParam("modorator") == "1" ? "modorator=1" : "";
 userName = getUrlParam("userName");
@@ -32,7 +32,7 @@ urlMeeting = "/mmetingroom?1=1&userName=" + userName + "&gender=" + gender;
 
 const captureScreen = document.querySelector("button#capturescreen");
 const screenPreview = document.querySelector("video#screenpreview");
-const stopScreenCapture = document.querySelector("button#stopscreencapture");
+const stopScreenCapture = document.querySelector("button#stopScreenCapture");
 
 // Attach the Track to the DOM.
 function attachTrack(track, container) {
@@ -120,38 +120,39 @@ window.addEventListener("beforeunload", leaveRoomIfJoined);
 
 // Obtain a token from the server in order to connect to the Room.
 
+document.getElementById("startConversation").onclick = function() {
+  $.getJSON(url, function(data) {
+    socket.emit("modoratorControl")
+    identity = data.identity;
+  // document.getElementById("room-controls").style.display = "block";
 
-$.getJSON(url, function(data) {
-  identity = data.identity;
- // document.getElementById("room-controls").style.display = "block";
+    // Bind button to join Room.
+    
+      roomName = "Lobby"
 
-  // Bind button to join Room.
-  document.getElementById("startConversation").onclick = function() {
-    roomName = "Lobby"
+      log("Joining room '" + roomName + "'...");
+      var connectOptions = {
+        name: roomName,
+        logLevel: "error",
+        video:{width:600},
+        audio:true
 
-    log("Joining room '" + roomName + "'...");
-    var connectOptions = {
-      name: roomName,
-      logLevel: "error"
-    };
+      };
 
-    if (previewTracks) {
-      connectOptions.tracks = previewTracks;
-    }
+      if (previewTracks) {
+        connectOptions.tracks = previewTracks;
+      }
 
-    // Join the Room with the token from the server and the
-    // LocalParticipant's Tracks.
-    Video.connect(data.token, connectOptions).then(roomJoined, function(error) {
-      log("Could not connect to Twilio: " + error.message);
-    });
-  };
+      // Join the Room with the token from the server and the
+      // LocalParticipant's Tracks.
+      Video.connect(data.token, connectOptions).then(roomJoined, function(error) {
+        log("Could not connect to Twilio: " + error.message);
+      });
+  });
+};
 
-  // Bind button to leave Room.
-  document.getElementById("stopConversation").onclick = function() {
-    log("Leaving room...");
-    activeRoom.disconnect();
-  };
-});
+  
+ 
 
 // Get the Participant's Tracks.
 function getTracks(participant) {
@@ -230,27 +231,6 @@ function roomJoined(room) {
   });
 }
 
-// Preview LocalParticipant's Tracks.
-// document.getElementById("button-preview").onclick = function() {
-//   var localTracksPromise = previewTracks
-//     ? Promise.resolve(previewTracks)
-//     : Video.createLocalTracks();
-
-//   localTracksPromise.then(
-//     function(tracks) {
-//       window.previewTracks = previewTracks = tracks;
-//       var previewContainer = document.getElementById("local-media");
-//       if (!previewContainer.querySelector("video")) {
-//         attachTracks(tracks, previewContainer);
-//       }
-//     },
-//     function(error) {
-//       console.error("Unable to access local media", error);
-//       log("Unable to access Camera and Microphone");
-//     }
-//   );
-// };
-
 // Activity log.
 function log(message) {
   console.log(message);
@@ -266,6 +246,14 @@ function leaveRoomIfJoined() {
   }
 }
 
+function getUrlParam(parameter, defaultvalue) {
+  var urlparameter = defaultvalue;
+  if (window.location.href.indexOf(parameter) > -1) {
+    urlparameter = getUrlVars()[parameter];
+  }
+  return urlparameter;
+}
+
 /// helpers functions
 function getUrlVars() {
   var vars = {};
@@ -278,13 +266,8 @@ function getUrlVars() {
   });
   return vars;
 }
-function getUrlParam(parameter, defaultvalue) {
-  var urlparameter = defaultvalue;
-  if (window.location.href.indexOf(parameter) > -1) {
-    urlparameter = getUrlVars()[parameter];
-  }
-  return urlparameter;
-}
+
+
 
 /**
  * Create a LocalVideoTrack for your screen. You can then share it
@@ -305,7 +288,8 @@ function createScreenTrack(height, width) {
     .getDisplayMedia({
       video: {
         height: height,
-        width: width
+        width: width,
+        id : 'screenshare'
       }
     })
     .then(function(stream) {
@@ -315,7 +299,6 @@ function createScreenTrack(height, width) {
     });
 }
 
-// exports.createScreenTrack = createScreenTrack;
 
 (async function() {
   // Load the code snippet.
@@ -342,6 +325,7 @@ function createScreenTrack(height, width) {
 
   stopScreenCapture.onclick = function() {
     // Stop capturing your screen.
+    socket.emit("unsharescreen","");
     screenTrack.stop();
   };
 })();
@@ -364,24 +348,30 @@ function beep() {
 /// chat functions
 
 
-$(function () {
- 
 
+// document ready init
+$(function () {
+
+  socket.emit("takeControl","moderator-change");
+
+  previewMyself();
+ 
   // ------------------ All participants functions ----------------------------
   $('#chatform').submit(function(e){
     e.preventDefault(); // prevents page reloading
-    socket.emit('chat message', "מנחה:" + $('#messageTxt').val());
+    socket.emit('chat message', "מנחה: " + $('#messageTxt').val());
     $('#messageTxt').val('');
     return false;
   });
 
   // Add chat line from everyone (include me) when event occur
-  socket.on('chat message', function(msg){
-    $('#messages').append($('<p>').text(msg));
+  socket.on('takeControl', function(msg){
+    activeRoom.disconnect();
   });
 
 
-  // ------------------------ User functions ---------------------------------
+  // ---------------------    Modorator functions ----------------------------
+
   $( "#button-load-participant" ).click(function() {
     participantsIds=[];
     // activeRoom.participants.forEach(function(participant) {
@@ -394,23 +384,22 @@ $(function () {
       });
   });
 
-  
-
-
-  // ---------------------    Modorator functions ----------------------------
-
-  
-  // - start conversation - open lobby
-  $( "#startConversation" ).click(function() {
-    $.get('/start-event')
-    .done(function(){
-      alert( "Event started - Lobby is open" );
-    })
+  $("#buttonBreak" ).click(function() {
+    clearInterval(meetingInterval);
+    socket.emit("backToLobby","1");
   });
 
+  
 
+
+  
+  
 // -- send participants to private meeting rooms
   $( "#button-start-meeting" ).click(function() {
+    $.get('/start-event')
+    .done(function(){
+      console.log( "Event started - Lobby is open" );
+    })    
     
     setRooms();
     var data = JSON.stringify(rooms);
@@ -423,23 +412,41 @@ $(function () {
         startTimer();
       });
   });
-});
 
-// --- share screen
-$( "#capturescreen" ).click(function() {
-  createScreenTrack();
-})
+  $( "#buttonContinueMeetings" ).click(function() {
+        console.log( "continue 1 on 1 meetings");
+        meetingTime = new Date(new Date().getTime() + meetingDuration);
+        meetingNumber = parseInt(document.querySelector("#txtMeetingNumber").value);
+        socket.emit('start meeting', meetingNumber);
+        startTimer();
+      });
+  
 
 
-// -- disconnect all
-$( "#stopConversation" ).click(function() {
-  doDisconnect('Lobby');
-})
+  $( "#buttonDisconnectMe" ).click(function() {
+      disconnectMe();
+  });
+
+  $( "#stopConversation" ).click(function() {
+    log("Leaving room...");
+    
+    socket.emit("EndOfMeeting");
+    alert("הפגישה הסתיימה");
+    activeRoom.disconnect();
+  })
+
+  $( "#takeControl" ).click(function() {
+   // socket.broadcast("takeControl");
+   // activeRoom.disconnect();
+  })
+
 
 $( "#button-test" ).click(function() {
-  socket.emit("start meeting",'1');
+ // socket.emit("start meeting",'1');
 })
 
+
+}); // - end of document ready
 
 
 
@@ -454,7 +461,7 @@ function doDisconnect(room) {
 /// This is the timer of the meeting
 
 function startTimer() {
-  var x = setInterval(function() {
+  meetingInterval = setInterval(function() {
 
     // Get today's date and time
     var now = new Date().getTime();
@@ -469,10 +476,11 @@ function startTimer() {
     var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
     var seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
-    // Display the result in the element with id="demo"
     document.getElementById("countdowntimerModorator").innerHTML = minutes + ":" + seconds ;
+    socket.emit("ClientTimer",minutes + ":" + seconds);
+    console.log(minutes + ":" + seconds);
+
     if(seconds!=lastSeconds) {
-      socket.emit("ClientTimer",minutes + ":" + seconds);
       lastSeconds = seconds;
     }
     
@@ -481,20 +489,28 @@ function startTimer() {
       socket.emit('buzzer', "one minute left");
     }
 
-    if (distance < 1000) {
+    if (distance < 30000  && distance > 27000) {
+      socket.emit('clearParticipantWindow', "1/2 minute left");
+    }
+
+    if (distance < 2000) {
       meetingNumber++;
+      
       if(meetingNumber > maxMeetings) {
+        meetingNumber = maxMeetings;
         socket.emit("backToLobby","1");
-        clearInterval(x);
+        clearInterval(meetingInterval);
       }
       else {
         meetingTime = new Date(new Date().getTime() + meetingDuration * 1);
         socket.emit("start meeting",meetingNumber);
         startTimer();
       }
+      document.querySelector("#txtMeetingNumber").value=meetingNumber;
     }
   }, 1000);
 }
+
 
 function setRooms() {
 
@@ -519,11 +535,11 @@ function setRooms() {
       }
   }
   maxMeetings = mensList.length
-
+  
   for (var i=0;i<maxMeetings;i++) {
  
       let ii=i 
-      rooms[i] = {
+      rooms[ii] = {
           'females' : womensList,
           'mens' : newary(ii)
       }
@@ -540,3 +556,43 @@ function newary(idx) {
   }
   return aaa;
 }
+
+function previewMyself() {
+  var localTracksPromise = previewTracks
+    ? Promise.resolve(previewTracks)
+    : Video.createLocalTracks({
+      audio: true,
+      video: { width: 800 },
+    });
+
+  localTracksPromise.then(function(tracks) {
+      window.previewTracks = previewTracks = tracks;
+      var previewContainer = document.getElementById('modorate-media');
+      if (!previewContainer.querySelector('video')) {
+        attachTracks(tracks, previewContainer);
+      }
+    },function(error) {
+      console.error('Unable to access local media', error);
+      log('Unable to access Camera and Microphone');
+    }
+  );
+};
+
+
+function disconnectMe() {
+  log("Left");
+  if (previewTracks) {
+    previewTracks.forEach(function(track) {
+      track.stop();
+    });
+    previewTracks = null;
+  }
+  detachParticipantTracks(room.localParticipant);
+  room.participants.forEach(detachParticipantTracks);
+  room.participants.forEach(removeName);
+  activeRoom = null;
+  document.getElementById("button-join").style.display = "block";
+  document.getElementById("button-leave").style.display = "none";
+};
+
+
