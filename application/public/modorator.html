@@ -3,6 +3,7 @@
   <head>
     <title>ספיד דייט ישראל</title>
     <link rel="stylesheet" href="index-modorate.css" />
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" />
     <link
       rel="stylesheet"  href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"  integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh"   crossorigin="anonymous" />
   </head>
@@ -36,7 +37,7 @@
             <button id="stopScreenCapture" class="btn btn-primary btn-block"> הפסק שיתוף מסך </button>
             <br>
             <button id="buttonDisconnectMe" class="btn btn-primary btn-block">  התנתק </button>
-            <button id="takeControl" class="btn btn-primary btn-block"> השתלט על המסך </button>
+            <button id="btnTakeControl" class="btn btn-primary btn-block"> השתלט על המסך </button>
 
             <!--
             <button id="startVideoCapture" class="btn btn-primary btn-block"> שתף וידאו </button>
@@ -72,6 +73,10 @@
         </div>
       <div class="col-sm-1 fr"></div>
     </div>
+    <div class="row">
+        <input type="text" id="messageToEveryone"  style="width: 600px;">
+        <button id="btnSendMessage" class="btn btn-primary"> שלח הודעה לכולם</button>
+    </div>
   
     <div class="row">
         <div class="col-sm-12"><h4 align="center">משתתפים אונליין</h4></div>
@@ -90,12 +95,17 @@
     
     <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
     <script>
         //var socket = io();
         var url = document.location.href
         var urlParts = url.replace('http://','').replace('https://','').split(/[/?#]/);
         var domain = urlParts[0];
         var socket = io.connect('https://' + domain);
+
+
+
+
      </script>
       
                

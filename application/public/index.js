@@ -21,8 +21,7 @@ var rooms = [];
 var mensList = [];
 var womensList = [];
 var lastSeconds;
-var meetingDuration = 200000; 
-var breakRound;
+var meetingDuration = 90000; 
 var meetingInterval;
 
 modorator = getUrlParam("modorator") == "1" ? "modorator=1" : "";
@@ -314,12 +313,14 @@ function createScreenTrack(height, width) {
   captureScreen.onclick = async function() {
     try {
       // Create and preview your local screen.
-      screenTrack = await createScreenTrack(720, 1280);
+      
+      screenTrack = await createScreenTrack(600, 400);
       screenTrack.attach(screenPreview);
+      socket.emit("startPesentation","1");
       // Show the "Capture Screen" button after screen capture stops.
       screenTrack.on("stopped", toggleButtons);
       // Show the "Stop Capture Screen" button.
-      toggleButtons();
+      //toggleButtons();
     } catch (e) {
       alert(e.message);
     }
@@ -327,16 +328,17 @@ function createScreenTrack(height, width) {
 
   stopScreenCapture.onclick = function() {
     // Stop capturing your screen.
-    socket.emit("unsharescreen","");
+    
     screenTrack.stop();
   };
 })();
 
 function toggleButtons() {
-  captureScreen.style.display =
-    captureScreen.style.display === "none" ? "" : "none";
-  stopScreenCapture.style.display =
-    stopScreenCapture.style.display === "none" ? "" : "none";
+  // captureScreen.style.display =
+  //   captureScreen.style.display === "none" ? "" : "none";
+  // stopScreenCapture.style.display =
+  //   stopScreenCapture.style.display === "none" ? "" : "none";
+  socket.emit("unsharescreen","");
 }
 
 
@@ -350,11 +352,14 @@ function beep() {
 /// chat functions
 
 
+
+// document ready init
 $(function () {
+
+  socket.emit("takeControl","moderator-change");
 
   previewMyself();
  
-
   // ------------------ All participants functions ----------------------------
   $('#chatform').submit(function(e){
     e.preventDefault(); // prevents page reloading
@@ -364,11 +369,7 @@ $(function () {
   });
 
   // Add chat line from everyone (include me) when event occur
-  socket.on('takeControl', function(msg){
-    activeRoom.disconnect();
-  });
-
-
+  
   // ---------------------    Modorator functions ----------------------------
 
   $( "#button-load-participant" ).click(function() {
@@ -387,6 +388,19 @@ $(function () {
     clearInterval(meetingInterval);
     socket.emit("backToLobby","1");
   });
+
+  $("#btnTakeControl" ).click(function() {
+    socket.emit("takeControl","1");
+  });
+
+  
+
+  $("#btnSendMessage" ).click(function() {
+    socket.emit("broadcastMessage",document.querySelector("#messageToEveryone").value);
+  });
+
+
+  sendMessage
 
   
 
@@ -488,6 +502,10 @@ function startTimer() {
       socket.emit('buzzer', "one minute left");
     }
 
+    if (distance < 30000  && distance > 27000) {
+      socket.emit('clearParticipantWindow', "1/2 minute left");
+    }
+
     if (distance < 2000) {
       meetingNumber++;
       
@@ -530,8 +548,7 @@ function setRooms() {
       }
   }
   maxMeetings = mensList.length
-  breakRound = parseInt(maxMeetings / 2 );
-
+  
   for (var i=0;i<maxMeetings;i++) {
  
       let ii=i 

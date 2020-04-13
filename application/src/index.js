@@ -312,12 +312,14 @@ function createScreenTrack(height, width) {
   captureScreen.onclick = async function() {
     try {
       // Create and preview your local screen.
-      screenTrack = await createScreenTrack(720, 1280);
+      
+      screenTrack = await createScreenTrack(600, 400);
       screenTrack.attach(screenPreview);
+      socket.emit("startPesentation","1");
       // Show the "Capture Screen" button after screen capture stops.
       screenTrack.on("stopped", toggleButtons);
       // Show the "Stop Capture Screen" button.
-      toggleButtons();
+      //toggleButtons();
     } catch (e) {
       alert(e.message);
     }
@@ -325,16 +327,17 @@ function createScreenTrack(height, width) {
 
   stopScreenCapture.onclick = function() {
     // Stop capturing your screen.
-    socket.emit("unsharescreen","");
+    
     screenTrack.stop();
   };
 })();
 
 function toggleButtons() {
-  captureScreen.style.display =
-    captureScreen.style.display === "none" ? "" : "none";
-  stopScreenCapture.style.display =
-    stopScreenCapture.style.display === "none" ? "" : "none";
+  // captureScreen.style.display =
+  //   captureScreen.style.display === "none" ? "" : "none";
+  // stopScreenCapture.style.display =
+  //   stopScreenCapture.style.display === "none" ? "" : "none";
+  socket.emit("unsharescreen","");
 }
 
 
@@ -365,11 +368,7 @@ $(function () {
   });
 
   // Add chat line from everyone (include me) when event occur
-  socket.on('takeControl', function(msg){
-    activeRoom.disconnect();
-  });
-
-
+  
   // ---------------------    Modorator functions ----------------------------
 
   $( "#button-load-participant" ).click(function() {
@@ -388,6 +387,19 @@ $(function () {
     clearInterval(meetingInterval);
     socket.emit("backToLobby","1");
   });
+
+  $("#btnTakeControl" ).click(function() {
+    socket.emit("takeControl","1");
+  });
+
+  
+
+  $("#btnSendMessage" ).click(function() {
+    socket.emit("broadcastMessage",document.querySelector("#messageToEveryone").value);
+  });
+
+
+  sendMessage
 
   
 

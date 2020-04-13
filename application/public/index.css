@@ -21,6 +21,22 @@ h1,h2,h3,h4,h5,h6 {
   direction: rtl;
   float: right;
   padding-right: 7px;
+  font-weight: bold;
+  width: 50%;
+}
+.text2 {
+  color: brown;
+  text-align: right;
+  direction: rtl;
+  float: right;
+  padding-right: 7px;
+  width: 50%;
+}
+
+.newLine {
+  padding-right: 7px;
+  clear: both;
+  width: -webkit-fill-available;
 }
 
 .textDiv {
@@ -219,3 +235,8 @@ div#log p {
   border-radius: 15px;
   padding: 20px !important;  
 }
+
+.toast-warning {
+  background-color: #f89406 !important;
+}
+

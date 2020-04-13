@@ -16,7 +16,7 @@ var roomType
 var otherUserId;
 var remarkId;
 var audioExist;
-var breakRound;
+var intervalChecker;
 
 userName = getUrlParam("userName");
 gender = getUrlParam("gender");
@@ -72,10 +72,10 @@ function appendName(identity, container) {
   }
 }
 
-function appendProfileElement(elementIdentity,elementContent, container) {
+function appendProfileElement(elementIdentity,elementContent, container, useClass) {
   const name = document.createElement("div");
   name.id = `profile-${elementIdentity}`;
-  name.className = "text";
+  name.className = useClass;
   name.textContent = elementContent;
   container.appendChild(name);
 }
@@ -307,13 +307,16 @@ function beep() {
 //  Document.ready init
 $(function () {
 
+  checkPresentation();
+
   if(r !=null) {
     connect()
   }
 
   $("#btnConnect" ).click(function() {
     connect();
-    document.querySelector("#startConversation").textContent = "מחובר";
+    document.querySelector("#btnConnect").innerText = "מחובר";
+    
   });
 
   $("#txtUserName").text( decodeURI(userName));
@@ -330,10 +333,39 @@ $(function () {
     $('#messages').append($('<li>').text(msg));
   });
 
+  socket.on('broadcastMessage', function(msg){
+    toastr.options.showMethod = 'slideDown';
+    toastr.options.hideMethod = 'slideUp';
+    toastr.options.closeMethod = 'slideUp';
+    toastr.options.closeButton = true;
+    toastr.options.tapToDismiss = false;
+    
+    
+    toastr.warning(msg,{timeOut: 5000})
+  });
+
+
+
+  
+
   socket.on('ClientTimer', function(msg){
     //$("#countdowntimer".text(msg));
     document.querySelector("#countdowntimer").textContent=msg;
   });
+
+  socket.on('startPesentation', function(msg){
+    // hide presentor
+    document.querySelector("#participantContainer-Modorator\\#undefined\\#1\\#\\#1586726753363 > video:nth-child(2)")
+    .style.position = "absolute";
+    document.querySelector("#participantContainer-Modorator\\#undefined\\#1\\#\\#1586726753363 > video:nth-child(2)")
+    .style.width = "150px";
+    document.querySelector("#participantContainer-Modorator\\#undefined\\#1\\#\\#1586726753363 > video:nth-child(2)")
+    .style.right = "30px";
+    document.querySelector("#participantContainer-Modorator\\#undefined\\#1\\#\\#1586726753363 > video:nth-child(4)")
+    .style.width = "820px";
+  });
+
+  
 
   socket.on('buzzer', function(msg){
     beep();
@@ -342,14 +374,24 @@ $(function () {
   socket.on('EndOfMeeting', function(msg){
     document.location.href='/thanks';
   });
+
+  // this event fires 30 sec before room is about to change and it will erase participant other side video & audio
+  socket.on('clearParticipantWindow', function(msg){
+    document.querySelector("#modorate-media").innerHTML="";
+  });
   
-
-
+  // this event fires when moderator is change and it will erase moderator video & audio
+  socket.on('takeControl', function(msg){
+    if(roomName == 'Lobby') {
+      document.querySelector("#modorate-media").innerHTML="";
+    }
+  });
+  
   socket.on("unsharescreen", function(msg) {
-    
-    document.querySelector("#participantContainer-Modorator\\#undefined\\#1\\# > video:nth-child(4)").style.display = "none";
-    
-    
+    var presentation = document.querySelector("#modorate-media>div>video:nth-child(4)")
+    var parent = document.querySelector("#modorate-media>div")
+    parent.removeChild(presentation);
+
   });
 
 
@@ -382,7 +424,7 @@ $(function () {
             })
         }
         room.disconnect()
-        document.location.href='/room?r=' + roomNumber + "&userName=" + userName +  "&gender=" + gender + "&id=" + id;
+        document.location.href='/room?r=' + roomNumber + "&userName=" + userName +  "&gender=" + gender + "&id=" + id & "&auto_connect=1";
     });
 });
 
@@ -447,53 +489,53 @@ function setCookie(cname, cvalue, exdays) {
         var i = 1;
         var profileContents = document.getElementById("profileContents");
         if(data.bearth_year_public == '1') {
-          appendProfileElement(i,'',profileContents);
+          appendProfileElement(i,'',profileContents,"newLine");
           var row = document.getElementById("profile-" + i);
-          appendProfileElement('birthYearLabel','שנת לידה',row)
-          appendProfileElement('birthYearLabel', data.bearth_year,row)
+          appendProfileElement('birthYearLabel','שנת לידה',row,"text2")
+          appendProfileElement('birthYearLabel', data.bearth_year,row,"text")
         }
         i++;
 
         if(data.relationship_public == '1') {
-          appendProfileElement(i,'',profileContents)
+          appendProfileElement(i,'',profileContents,"newLine");
           var row = document.getElementById("profile-" + i);
-          appendProfileElement('birthYearLabel','מצב משפחתי',row)
+          appendProfileElement('birthYearLabel','מצב משפחתי',row,"text2")
           appendProfileElement('birthYearLabel', data.relationship,row)
         }i++;
 
         if(data.height_public == '1') {
-          appendProfileElement(i,'',profileContents)
+          appendProfileElement(i,'',profileContents,"newLine");
           var row = document.getElementById("profile-" + i);
-          appendProfileElement('birthYearLabel','גובה',row)
-          appendProfileElement('birthYearLabel', data.height,row)
+          appendProfileElement('birthYearLabel','גובה',row,"text2")
+          appendProfileElement('birthYearLabel', data.height,row,"text")
         }i++;
 
         if(data.has_kids_public == '1') {
-          appendProfileElement(i,'',profileContents)
+          appendProfileElement(i,'',profileContents,"newLine");
           var row = document.getElementById("profile-" + i);
-          appendProfileElement('birthYearLabel','ילדים',row)
-          appendProfileElement('birthYearLabel', data.has_kids,row)
+          appendProfileElement('birthYearLabel','ילדים',row,"text2")
+          appendProfileElement('birthYearLabel', data.has_kids,row,"text")
         }i++;
 
         if(data.education_public == '1') {
-          appendProfileElement(i,'',profileContents)
+          appendProfileElement(i,'',profileContents,"newLine");
           var row = document.getElementById("profile-" + i);
-          appendProfileElement('birthYearLabel','השכלה',row)
-          appendProfileElement('birthYearLabel', data.education,row)
+          appendProfileElement('birthYearLabel','השכלה',row,"text2")
+          appendProfileElement('birthYearLabel', data.education,row,"text")
         }i++;
 
         if(data.proffesion_public == '1') {
-          appendProfileElement(i,'',profileContents)
+          appendProfileElement(i,'',profileContents,"newLine");
           var row = document.getElementById("profile-" + i);
-          appendProfileElement('birthYearLabel','עיסוק',row)
-          appendProfileElement('birthYearLabel', data.proffesion,row)
+          appendProfileElement('birthYearLabel','עיסוק',row,"text2")
+          appendProfileElement('birthYearLabel', data.proffesion,row,"text")
         }i++;
 
         if(data.smoke_public == '1') {
-          appendProfileElement(i,'',profileContents)
+          appendProfileElement(i,'',profileContents,"newLine");
           var row = document.getElementById("profile-" + i);
-          appendProfileElement('birthYearLabel','מעשן/ת',row)
-          appendProfileElement('birthYearLabel', data.smoke,row)
+          appendProfileElement('birthYearLabel','מעשן/ת',row,"text2")
+          appendProfileElement('birthYearLabel', data.smoke,row,"text")
         }i++;
         
       });
@@ -532,9 +574,48 @@ document.getElementById('button-preview').onclick = function() {
   );
 };
 
-//document.querySelector("#participantContainer-Modorator\\#undefined\\#1\\# > video").style.display = "none"
-//document.querySelector("#participantContainer-Modorator\\#undefined\\#1\\# > video:nth-child(4)").style.width="640px"
-  
+
+
+function checkPresentation() {
+  intervalChecker = setInterval(function() {
+    if(document.querySelector("#modorate-media>div>video:nth-child(4)")) {
+      
+      var presentor = document.querySelector("#modorate-media>div>video:nth-child(2)")
+      if(typeof(presentor) != 'undefined' && presentor != null) {
+          presentor.style.width = "150px";
+          presentor.style.position = "absolute";
+          presentor.style.right = "30px";
+          document.querySelector("#modorate-media>div>video:nth-child(4)").style.width = "800px";
+      }
+      else {
+        var presentor = document.querySelector("#modorate-media>div>video:nth-child(3)")
+        presentor.style.width = "150px";
+        presentor.style.position = "absolute";
+        presentor.style.right = "30px";
+        document.querySelector("#modorate-media>div>video:nth-child(4)").style.width = "800px";
+      }
+    }
+    else {
+      var presentor = document.querySelector("#modorate-media>div>video:nth-child(2)")
+      if(typeof(presentor) != 'undefined' && presentor != null) {
+          presentor.style.width = "800px";
+          presentor.style.position = "relative";
+          presentor.style.right = "0px";
+      }
+      else {
+        var presentor = document.querySelector("#modorate-media>div>video:nth-child(3)")
+        presentor.style.width = "800px";
+        presentor.style.position = "relative";
+        presentor.style.right = "0px";
+      }      
+    }
+
+  },1000);
+}
+
+
+
+
 
 
 

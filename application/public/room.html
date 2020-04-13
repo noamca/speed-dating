@@ -3,6 +3,8 @@
   <head>
     <title>ספיד דייט ישראל</title>
     <link rel="stylesheet" href="index.css" />
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" />
+    
     <link
       rel="stylesheet"  href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"  integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh"   crossorigin="anonymous" />
   </head>
@@ -16,43 +18,48 @@
                     <img src="logo.png" style="width: 90px;">
                 </div>
                 <div class="col-sm-9 fr">
-                    <div class="textDiv">ברוכים הבאים לספיד דייט ישראל</div>
+                    <div class="textDiv">ספידייט שולחן פרטי</div>
                     <div class="textDiv" id='txtUserName'></div>
                 </div>
 
-                <div class="col-sm-2 fr textDiv" id="countdowntimer"></div>
+                <div class="fr textDiv" id="countdowntimer" style="float: left;"></div><div id="clock" style="float: left;"><img src="clock.png" style="width:30px;"></div>
         </div>
     </div>
     <div class="row">
-        <div class="col-sm-12"><h4 align="center"></span> חדר פגישה פרטי</h4></div>
+        <div class="col-sm-12 textDiv" id="tableNumber">הנך נמצא בשולחן מספר 4</div>
     </div>   
 
     <div class="row">
 
+      <div class="col-sm-3 fr">&nbsp;</div>  
       <div class="col-sm-6 fr">
         <div id="modorate-media"></div>
         <div id="remote-media" class="oneOnoneWindow" style="display:none">&nbsp;</div>
       </div>
 
-        <div class="col-sm-3 fr">
+        <div class="col-sm-2 fr">
           <div class="row">
-            <div class="col-sm-12 fr">פרופיל</div>
+            <div class="col-sm-12 fr text2">פרופיל</div>
           </div>
-          <div class="row" id='profileContents'>
-          </div>  
+          <div class="row" id='profileContents'></div>  
         </div>
-       
-           
-        <div class="col-sm-3 fr">
+        
+        <div class="col-sm-1 fr">&nbsp;</div>
+    </div>
+
+
+    <div class="row">    
+      <div class="col-sm-3 fr">&nbsp;</div>
+        <div class="col-sm-6 fr">
             <div id="send-msg">
-                <div class="row textDiv" margin-l-r>הערה על המועמד/ת</div>
+                <div class="row textDiv" margin-l-r>מקום לרשום חוות דעת פרטית על המועמד</div>
                 <form id="comments">
-                    <textarea id="messageTxt"  cols=30 rows=10></textarea>
+                    <textarea id="messageTxt"  cols=80 rows=5></textarea>
                 </form>  
                 <div class="row textDiv"><button id="saveRemark" class="btn btn-primary margin-l-r">שמירה</button></div>          
             </div>
         </div>
-      
+        <div class="col-sm-3 fr">&nbsp;</div>
     </div>
   
     <div class="row">
@@ -64,6 +71,7 @@
     
     <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
     <script>
         //var socket = io();
         var url = document.location.href

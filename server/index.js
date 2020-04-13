@@ -146,6 +146,33 @@ app.get("/profile",function(request, response) {
 
 });
 
+app.get("/profileImage",function(request, response) {
+  var id = request.query.id;
+  if( id != null && !isNaN(id)) {
+    id = parseInt(id)
+	  if(isNaN(id)) {id=0}
+    var sql = "SELECT * FROM speedate.profile_picture where user_id=" + id + " AND application_id='peedateisrael.co.il' Limit 1";
+    console.log(sql);
+    con.query(sql , function (err, result) {
+      //if (err) throw err;
+      response.send(result[0]);
+    });
+  }
+  else{
+    response.send(201);
+  }
+
+});
+
+
+
+
+
+
+
+
+
+
 app.get("/read-rem",function(request, response) {
   var id = request.query.id;
   var userId = request.query.user_id;
@@ -291,8 +318,19 @@ io.on('connection', function(socket){
   });  
 
   socket.on('takeControl', function(msg){
-    socket.broadcast.emit('takeControl', "1");
+    io.emit('takeControl', "1");
   });  
+
+  socket.on('broadcastMessage', function(msg){
+    io.emit('broadcastMessage', msg);
+  });  
+
+  socket.on('startPesentation', function(msg){
+    io.emit('startPesentation', msg);
+  });    
+
+  
+  
 
   
 
