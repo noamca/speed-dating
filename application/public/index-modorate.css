@@ -56,6 +56,9 @@ hr {
   border-width: thin;
   border-color: #b80d06;
   border-radius: 15px;
+  text-align: right;
+  overflow: scroll;
+  max-height: 600px;
 }
 
 #send-msg {

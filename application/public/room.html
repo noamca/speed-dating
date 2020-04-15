@@ -26,7 +26,7 @@
         </div>
     </div>
     <div class="row">
-        <div class="col-sm-12 textDiv" id="tableNumber">הנך נמצא בשולחן מספר 4</div>
+        <div class="col-sm-12 textDiv" id="tableNumber"></div> 
     </div>   
 
     <div class="row">
@@ -75,9 +75,9 @@
     <script>
         //var socket = io();
         var url = document.location.href
-        var urlParts = url.replace('http://','').replace('https://','').split(/[/?#]/);
-        var domain = urlParts[0];
-        var socket = io.connect('https://' + domain);
+        var urlParts = url.replace('http://','http/').replace('https://','https/').split(/[/?#]/);
+        var domain = urlParts[1];
+        var socket = io.connect(urlParts[0] + '://' + domain);
   
       </script>
       

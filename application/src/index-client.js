@@ -16,11 +16,14 @@ var otherUserId;
 var remarkId;
 var audioExist;
 var intervalChecker;
+var systemEventId;
 
 userName = getUrlParam("userName");
 gender = getUrlParam("gender");
 id = getUrlParam("id");
 r = getUrlParam("r");
+systemEventId = getUrlParam("eventId");
+
 
 var saveRemark = document.getElementById("saveRemark");
 
@@ -76,7 +79,9 @@ function appendProfileElement(elementIdentity,elementContent, container, useClas
   name.id = `profile-${elementIdentity}`;
   name.className = useClass;
   name.textContent = elementContent;
-  container.appendChild(name);
+  if(typeof container != 'undefined' && container != null  ) {
+    container.appendChild(name);
+  }
 }
 
 // Removes remoteParticipant container from the DOM.
@@ -206,6 +211,10 @@ function roomJoined(room) {
 
   var remoteMediaContainer = document.getElementById("remote-media");
   var modorateMediaContainer = document.getElementById("modorate-media");
+
+  // Attach LocalParticipant's Tracks, if not already attached.
+   attachTracks(getTracks(room.localParticipant), remoteMediaContainer);
+
   
   room.participants.forEach(function(participant) {
     log("Already in Room: '" + participant.identity + "'");
@@ -218,6 +227,7 @@ function roomJoined(room) {
       loadProfile(otherUserId);
       loadRemark(otherUserId);
     }
+    
   });
 
   // When a Participant joins the Room, log the event.
@@ -306,11 +316,19 @@ function beep() {
 //  Document.ready init
 $(function () {
 
+  updateAttendingStatus();
   checkPresentation();
+  connect()
+  clearRoom()
 
-  if(r !=null) {
-    connect()
+  // update table number
+
+  if(typeof(r) !="undefined" && r!=null) {
+    document.querySelector("#tableNumber").innerText = "שולחן מספר " + roomNumber;
   }
+
+
+  
 
   $("#btnConnect" ).click(function() {
     connect();
@@ -332,6 +350,8 @@ $(function () {
     $('#messages').append($('<li>').text(msg));
   });
 
+
+
   socket.on('broadcastMessage', function(msg){
     toastr.options.showMethod = 'slideDown';
     toastr.options.hideMethod = 'slideUp';
@@ -349,7 +369,11 @@ $(function () {
 
   socket.on('ClientTimer', function(msg){
     //$("#countdowntimer".text(msg));
-    document.querySelector("#countdowntimer").textContent=msg;
+    
+    if(typeof(document.querySelector("#countdowntimer")) != 'undefined' && document.querySelector("#countdowntimer") != null) {
+      document.querySelector("#countdowntimer").innerHTML=msg;
+    }
+    
   });
 
   socket.on('startPesentation', function(msg){
@@ -404,26 +428,28 @@ $(function () {
         var thisRound = loadedPar[parseInt(roundNumber) - 1]
         if(gender == 'm') {
             var i = 1
-            thisRound.mens.forEach(id => {
-                if(id.includes(decodeURI(userName))) {
+            thisRound.mens.forEach(idd => {
+                if(idd.includes(decodeURI(userName))) {
                     let ii=i;
                     roomNumber = ii;
                 }
                 i++;
             })
         }
+
         else {
             var i = 1
-            thisRound.females.forEach(id => {
-                if(id.includes(decodeURI(userName))) {
+            thisRound.females.forEach(idd => {
+                if(idd.includes(decodeURI(userName))) {
                     let ii=i;
                     roomNumber = ii;
                 }
                 i++;
             })
         }
-        room.disconnect()
-        document.location.href='/room?r=' + roomNumber + "&userName=" + userName +  "&gender=" + gender + "&id=" + id & "&auto_connect=1";
+
+        console.log('/room?r=' + roomNumber + "&userName=" + userName +  "&gender=" + gender + "&id=" + id +  "&auto_connect=1");
+        document.location.href='/room?r=' + roomNumber + "&userName=" + userName +  "&gender=" + gender + "&id=" + id + "&auto_connect=1";
     });
 });
 
@@ -432,19 +458,19 @@ socket.on('backToLobby', function(msg){
   });
 
 
-
-  saveRemark.onclick = function() {
-      var remark = document.querySelector("#messageTxt").value
-      remarkId = parseInt(remarkId);
-      if (isNaN(remarkId)) {remarkId=0}
-      $.get( "/save-rem?id=" + id + "&user_id=" + otherUserId + "&remark=" + remark + '&remark_id=' + remarkId)
-      .done(function(data) {
-        if (data) {
-          remarkId = data.result
-        }
-      }) 
-  };
-
+if(saveRemark != null) {
+    saveRemark.onclick = function() {
+        var remark = document.querySelector("#messageTxt").value
+        remarkId = parseInt(remarkId);
+        if (isNaN(remarkId)) {remarkId=0}
+        $.get( "/save-rem?id=" + id + "&user_id=" + otherUserId + "&remark=" + remark + '&remark_id=' + remarkId)
+        .done(function(data) {
+          if (data) {
+            remarkId = data.result
+          }
+        }) 
+    };
+  }
 
 /// --- end document ready
 });
@@ -565,29 +591,6 @@ function setCookie(cname, cvalue, exdays) {
  }
 
 
- // Preview LocalParticipant's Tracks.
-document.getElementById('button-preview').onclick = function() {
-  var localTracksPromise = previewTracks
-    ? Promise.resolve(previewTracks)
-    : Video.createLocalTracks({
-      audio: true,
-      video: { width: 100 },
-    });
-
-  localTracksPromise.then(function(tracks) {
-      window.previewTracks = previewTracks = tracks;
-      var previewContainer = document.getElementById('my-preview-video');
-      if (!previewContainer.querySelector('video')) {
-        attachTracks(tracks, previewContainer);
-      }
-    },function(error) {
-      console.error('Unable to access local media', error);
-      log('Unable to access Camera and Microphone');
-    }
-  );
-};
-
-
 
 function checkPresentation() {
   intervalChecker = setInterval(function() {
@@ -598,14 +601,16 @@ function checkPresentation() {
           presentor.style.width = "150px";
           presentor.style.position = "absolute";
           presentor.style.right = "30px";
-          document.querySelector("#modorate-media>div>video:nth-child(4)").style.width = "800px";
+          document.querySelector("#modorate-media>div>video:nth-child(4)").style.width = "640px";
       }
       else {
         var presentor = document.querySelector("#modorate-media>div>video:nth-child(3)")
-        presentor.style.width = "150px";
-        presentor.style.position = "absolute";
-        presentor.style.right = "30px";
-        document.querySelector("#modorate-media>div>video:nth-child(4)").style.width = "800px";
+        if(typeof presentor != 'undefined'  && presentor != null) {
+          presentor.style.width = "150px";
+          presentor.style.position = "absolute";
+          presentor.style.right = "30px";
+          document.querySelector("#modorate-media>div>video:nth-child(4)").style.width = "640px";
+        }
       }
     }
     else {
@@ -617,13 +622,32 @@ function checkPresentation() {
       }
       else {
         var presentor = document.querySelector("#modorate-media>div>video:nth-child(3)")
-        presentor.style.width = "800px";
-        presentor.style.position = "relative";
-        presentor.style.right = "0px";
+        if(typeof presentor != 'undefined' && presentor != null ) {
+          presentor.style.width = "800px";
+          presentor.style.position = "relative";
+          presentor.style.right = "0px";
+        }
       }      
     }
 
   },1000);
+}
+
+function updateAttendingStatus() {
+  $.get("/updateStatus?user_id=" + id + "&event_id=" + systemEventId);
+  if(typeof roomNumber != 'undefined')
+    document.querySelector("tableNumber").text = " הנך נמצא בשולחן מספר " + roomNumber;
+}
+
+
+function clearRoom() {
+  if(r!="" && r != null) {
+    document.querySelector("profileContents").innerHTML = ""
+  }
+  if(document.querySelector("modorator-media") !=null ) {
+    document.querySelector("modorator-media").innerHTML=""
+  }
+  
 }
 
 

@@ -123,10 +123,9 @@ window.addEventListener("beforeunload", leaveRoomIfJoined);
 
 document.getElementById("startConversation").onclick = function() {
   $.getJSON(url, function(data) {
-    socket.emit("modoratorControl")
+    socket.emit("takeControl",userName);
     identity = data.identity;
-  // document.getElementById("room-controls").style.display = "block";
-
+ 
     // Bind button to join Room.
     
       roomName = "Lobby"
@@ -227,8 +226,8 @@ function roomJoined(room) {
     room.participants.forEach(detachParticipantTracks);
     room.participants.forEach(removeName);
     activeRoom = null;
-    document.getElementById("button-join").style.display = "block";
-    document.getElementById("button-leave").style.display = "none";
+    //document.getElementById("button-join").style.display = "block";
+    //document.getElementById("button-leave").style.display = "none";
   });
 }
 
@@ -356,8 +355,6 @@ function beep() {
 // document ready init
 $(function () {
 
-  socket.emit("takeControl","moderator-change");
-
   previewMyself();
  
   // ------------------ All participants functions ----------------------------
@@ -390,7 +387,7 @@ $(function () {
   });
 
   $("#btnTakeControl" ).click(function() {
-    socket.emit("takeControl","1");
+    socket.emit("takeControl",userName);
   });
 
   
@@ -400,12 +397,23 @@ $(function () {
   });
 
 
-  sendMessage
+    // Add chat line from everyone (include me) when event occur
+    socket.on('chat message', function(msg){
+      $('#messages').append($('<li>').text(msg));
+    });
 
+    socket.on('takeControl', function(msg){
+        if(msg!=userName) {
+          document.querySelector("#modorate-media").innerHTML="";
+        }
+    });    
   
+    $( "#btnSetRooms" ).click(function() {
+      setRooms();
+      console.log(rooms);
+    })   
 
-
-  
+    
   
 // -- send participants to private meeting rooms
   $( "#button-start-meeting" ).click(function() {
@@ -448,10 +456,7 @@ $(function () {
     activeRoom.disconnect();
   })
 
-  $( "#takeControl" ).click(function() {
-   // socket.broadcast("takeControl");
-   // activeRoom.disconnect();
-  })
+  
 
 
 $( "#button-test" ).click(function() {
@@ -474,6 +479,9 @@ function doDisconnect(room) {
 /// This is the timer of the meeting
 
 function startTimer() {
+
+  document.querySelector("#txtMeetingNumber").value = meetingNumber;
+
   meetingInterval = setInterval(function() {
 
     // Get today's date and time
@@ -490,7 +498,9 @@ function startTimer() {
     var seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
     document.getElementById("countdowntimerModorator").innerHTML = minutes + ":" + seconds ;
-    socket.emit("ClientTimer",minutes + ":" + seconds);
+    if(distance > 0) {
+      socket.emit("ClientTimer",minutes + ":" + seconds);
+    }
     console.log(minutes + ":" + seconds);
 
     if(seconds!=lastSeconds) {
@@ -510,22 +520,29 @@ function startTimer() {
       meetingNumber++;
       
       if(meetingNumber > maxMeetings) {
+
         meetingNumber = maxMeetings;
         socket.emit("backToLobby","1");
-        clearInterval(meetingInterval);
-      }
+        var highestTimeoutId = setTimeout(";");
+          for (var iii = 0 ; iii < highestTimeoutId ; iii++) {
+            clearInterval(iii); 
+          }
+        }
       else {
         meetingTime = new Date(new Date().getTime() + meetingDuration * 1);
         socket.emit("start meeting",meetingNumber);
         startTimer();
       }
-      document.querySelector("#txtMeetingNumber").value=meetingNumber;
+      
     }
   }, 1000);
 }
 
 
 function setRooms() {
+
+  mensList=[]
+  womensList=[]
 
   window.room.participants.forEach(remoteParticipant => {
     identity = remoteParticipant.identity;
@@ -539,12 +556,12 @@ function setRooms() {
 
   if(womensList.length > mensList.length) {
       for(i=0;i<womensList.length - mensList.length;i++) {
-          mensList[mensList.length] = 0;
+          mensList[mensList.length]  = "0";
       }
   }
   if(mensList.length > womensList.length) {
       for(i=0;i<mensList.length - womensList.length;i++) {
-          womensList[womensList.length] = 0;
+          womensList[womensList.length] = "0";
       }
   }
   maxMeetings = mensList.length

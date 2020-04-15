@@ -18,7 +18,7 @@
                 </div>
                 <div class="col-sm-11 fr">
                         <h1 align="center">ספיד דייט - מסך ניהול והנחייה</h1>
-                        <h2 align="center">מפגש 135</h2>
+                        <h2 align="center">מפגש וירטואלי</h2>
                 </div>
            
             
@@ -38,6 +38,7 @@
             <br>
             <button id="buttonDisconnectMe" class="btn btn-primary btn-block">  התנתק </button>
             <button id="btnTakeControl" class="btn btn-primary btn-block"> השתלט על המסך </button>
+            <button id="btnSetRooms" class="btn btn-primary btn-block"> חלוקת חדרים </button>
 
             <!--
             <button id="startVideoCapture" class="btn btn-primary btn-block"> שתף וידאו </button>
@@ -74,7 +75,7 @@
       <div class="col-sm-1 fr"></div>
     </div>
     <div class="row">
-        <input type="text" id="messageToEveryone"  style="width: 600px;">
+        <input type="text" id="messageToEveryone"  style="width: 600px; margin-right: 30px;">
         <button id="btnSendMessage" class="btn btn-primary"> שלח הודעה לכולם</button>
     </div>
   
@@ -99,9 +100,9 @@
     <script>
         //var socket = io();
         var url = document.location.href
-        var urlParts = url.replace('http://','').replace('https://','').split(/[/?#]/);
-        var domain = urlParts[0];
-        var socket = io.connect('https://' + domain);
+        var urlParts = url.replace('http://','http/').replace('https://','https/').split(/[/?#]/);
+        var domain = urlParts[1];
+        var socket = io.connect(urlParts[0] + '://' + domain);
 
 
 
