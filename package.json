@@ -17,7 +17,7 @@
     "build:examples:screenshare": "copyfiles -f examples/screenshare/src/helpers.js examples/screenshare/public && browserify examples/screenshare/src/index.js > examples/screenshare/public/index.js",
     "build:examples:localmediacontrols": "copyfiles -f examples/localmediacontrols/src/helpers.js examples/localmediacontrols/public && browserify examples/localmediacontrols/src/index.js > examples/localmediacontrols/public/index.js",
     "build:examples:remotereconnection": "copyfiles -f examples/remotereconnection/src/helpers.js examples/remotereconnection/public && browserify examples/remotereconnection/src/index.js > examples/remotereconnection/public/index.js",
-    "build:quickstart": "browserify application/src/index.js > application/public/index.js && browserify application/src/index-client.js > application/public/index-client.js ",
+    "build:quickstart": "browserify application/src/index.js > application/public/index.js && browserify application/src/index-client.js > application/public/index-client.js && browserify application/src/index-room.js > application/public/index-room.js",
     "clean": "npm-run-all clean:*",
     "clean:examples": "npm-run-all clean:examples:*",
     "clean:examples:bandwidthconstraints": "rimraf examples/bandwidthconstraints/public/index.js examples/bandwidthconstraints/public/helpers.js",

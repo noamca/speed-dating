@@ -18,12 +18,9 @@ var remarkId;
 var audioExist;
 var intervalChecker;
 var systemEventId;
+var profileExist = 0;
 
-userName = getUrlParam("userName");
-gender = getUrlParam("gender");
-id = getUrlParam("id");
-r = getUrlParam("r");
-systemEventId = getUrlParam("eventId");
+
 
 
 var saveRemark = document.getElementById("saveRemark");
@@ -43,7 +40,7 @@ if (typeof r === 'string' || r instanceof String) {
 }
 
 
-url = "/token?1=1&userName=" + userName + "&gender=" + gender + "&id=" + id;
+
 
 // Attach the Track to the DOM.
 function attachTrack(track, container) {
@@ -152,43 +149,34 @@ function connect() {
     // document.getElementById("room-controls").style.display = "block";
 
       // Bind button to join Room.
+
+      var connectOptions;
       
         if(r !=null) {
-            roomName = "Room" + r;
-            roomType = "small-group";
-            audioExist = true;
-            
-
+          connectOptions = {
+            name:  "Room" + r,
+            logLevel: "error",
+            type : "small-group",
+          };
+  
         }
         else {
-            roomName = "Lobby";
-            roomType = "group";
-            audioExist = false;
-            
+          connectOptions = {
+            name:  "Lobby" ,
+            logLevel: "error",
+            type : "group",
+            audio : false,
+            video : {width:300},
+          };
         }
 
-        log("Joining room '" + roomName + "'...");
-        var connectOptions = {
-          name: roomName,
-          logLevel: "error",
-          type : roomType,
-          audio : audioExist,
-          video : { width: 200 }
-          
-        };
-
-        if (previewTracks) {
-          connectOptions.tracks = previewTracks;
-        }
-
+        log("Joining room '" + connectOptions.name + "'...");
+     
         // Join the Room with the token from the server and the
         // LocalParticipant's Tracks.
         Video.connect(data.token, connectOptions).then(roomJoined, function(error) {
           log("Could not connect to Twilio: " + error.message);
         });
-    
-      // Bind button to leave Room.
-    
     });
 }
 
@@ -317,10 +305,28 @@ function beep() {
 //  Document.ready init
 $(function () {
 
+  userName = getUrlParam("userName");
+  gender = getUrlParam("gender");
+  id = getUrlParam("id");
+  r = getUrlParam("r");
+  systemEventId = getUrlParam("eventId");
+
+  url = "/token?1=1&userName=" + userName + "&gender=" + gender + "&id=" + id;
+
   updateAttendingStatus();
   checkPresentation();
   connect()
   clearRoom()
+  myLocationNow(id,userName,gender)
+
+  // update table number
+
+  if(typeof(r) !="undefined" && r!=null) {
+    document.querySelector("#tableNumber").innerText = "שולחן מספר " + roomNumber;
+  }
+
+
+  
 
   $("#btnConnect" ).click(function() {
     connect();
@@ -342,6 +348,13 @@ $(function () {
     $('#messages').append($('<li>').text(msg));
   });
 
+  socket.on('ClientTimer', function(msg){
+    if(typeof(document.querySelector("#countdowntimer")) != 'undefined' && document.querySelector("#countdowntimer") != null) {
+      document.querySelector("#countdowntimer").innerHTML=msg;
+    }
+  });
+
+
 
 
   socket.on('broadcastMessage', function(msg){
@@ -359,15 +372,7 @@ $(function () {
 
   
 
-  socket.on('ClientTimer', function(msg){
-    //$("#countdowntimer".text(msg));
-    var timer = document.querySelector("#countdowntimer");
-    if(typeof timer !="undefined" && timer !=null) {
-      document.querySelector("#countdowntimer").innerHTML=msg;
-    }
-    
-  });
-
+  
   socket.on('startPesentation', function(msg){
     // hide presentor
     document.querySelector("#participantContainer-Modorator\\#undefined\\#1\\#\\#1586726753363 > video:nth-child(2)")
@@ -410,40 +415,41 @@ $(function () {
   });
 
 
-  socket.on('start meeting', function(msg){
+//   socket.on('start meeting', function(msg){
     
-    $.get( "/load-participants")
-    .done(function( data ) {
-        var roomNumber = 0;  
-        var roundNumber = msg;
-        var loadedPar = JSON.parse(data);
-        var thisRound = loadedPar[parseInt(roundNumber) - 1]
-        if(gender == 'm') {
-            var i = 1
-            thisRound.mens.forEach(idd => {
-                if(idd.includes(decodeURI(userName))) {
-                    let ii=i;
-                    roomNumber = ii;
-                }
-                i++;
-            })
-        }
+//     $.get( "/load-participants")
+//     .done(function( data ) {
+//         var roomNumber = 0;  
+//         var roundNumber = msg;
+//         var loadedPar = JSON.parse(data);
+//         var thisRound = loadedPar[parseInt(roundNumber) - 1]
+//         if(gender == 'm') {
+//             var i = 1
+//             thisRound.mens.forEach(idd => {
+//                 if(idd.includes(decodeURI(userName))) {
+//                     let ii=i;
+//                     roomNumber = ii;
+//                 }
+//                 i++;
+//             })
+//         }
 
-        else {
-            var i = 1
-            thisRound.females.forEach(idd => {
-                if(idd.includes(decodeURI(userName))) {
-                    let ii=i;
-                    roomNumber = ii;
-                }
-                i++;
-            })
-        }
+//         else {
+//             var i = 1
+//             thisRound.females.forEach(idd => {
+//                 if(idd.includes(decodeURI(userName))) {
+//                     let ii=i;
+//                     roomNumber = ii;
+//                 }
+//                 i++;
+//             })
+//         }
 
-        console.log('/room?r=' + roomNumber + "&userName=" + userName +  "&gender=" + gender + "&id=" + id +  "&auto_connect=1");
-        document.location.href='/room?r=' + roomNumber + "&userName=" + userName +  "&gender=" + gender + "&id=" + id + "&auto_connect=1";
-    });
-});
+//         console.log('/room?r=' + roomNumber + "&userName=" + userName +  "&gender=" + gender + "&id=" + id +  "&auto_connect=1");
+//         document.location.href='/room?r=' + roomNumber + "&userName=" + userName +  "&gender=" + gender + "&id=" + id + "&auto_connect=1";
+//     });
+// });
+
 
 socket.on('backToLobby', function(msg){
     document.location.href="/application/lobby.html?userName=" + userName +  "&gender=" + gender + "&id=" + id;
@@ -517,6 +523,7 @@ function setCookie(cname, cvalue, exdays) {
 
     $.get( "/profile?id=" + id)
       .done(function( data ) {
+        if(profileExist == 0) {
         var i = 1;
         var profileContents = document.getElementById("profileContents");
         if(data.bearth_year_public == '1') {
@@ -568,8 +575,10 @@ function setCookie(cname, cvalue, exdays) {
           appendProfileElement('birthYearLabel','מעשן/ת',row,"text2")
           appendProfileElement('birthYearLabel', data.smoke,row,"text")
         }i++;
+        profileExist = 1;
+      }
         
-      });
+    });
   }
 
   function makeid(length) {
@@ -581,6 +590,10 @@ function setCookie(cname, cvalue, exdays) {
     }
     return result;
  }
+
+
+
+
 
 
 
@@ -597,7 +610,7 @@ function checkPresentation() {
       }
       else {
         var presentor = document.querySelector("#modorate-media>div>video:nth-child(3)")
-        if(typeof presentor != 'undefined'  ) {
+        if(typeof presentor != 'undefined'  && presentor != null) {
           presentor.style.width = "150px";
           presentor.style.position = "absolute";
           presentor.style.right = "30px";
@@ -614,7 +627,7 @@ function checkPresentation() {
       }
       else {
         var presentor = document.querySelector("#modorate-media>div>video:nth-child(3)")
-        if(typeof presentor != 'undefined'  ) {
+        if(typeof presentor != 'undefined' && presentor != null ) {
           presentor.style.width = "800px";
           presentor.style.position = "relative";
           presentor.style.right = "0px";
@@ -634,12 +647,27 @@ function updateAttendingStatus() {
 
 function clearRoom() {
   if(r!="" && r != null) {
-    document.querySelector("profileContents").innerHTML = ""
+    if(document.querySelector("profileContents") != null)
+      document.querySelector("profileContents").innerHTML = ""
   }
   if(document.querySelector("modorator-media") !=null ) {
     document.querySelector("modorator-media").innerHTML=""
   }
   
+}
+
+
+function myLocationNow(id,userName,gender) {
+  var intervalLocation = setInterval(function() {
+    $.get( "/myLocationNow?id=" + id + "&userName=" + userName +  "&gender=" + gender)
+    .done(function(data) {
+      if(decodeURI(document.location.href)!=decodeURI(data)) {
+        document.location.href=data
+      }
+  
+    })
+
+  },5000)
 }
 
 

@@ -119,8 +119,9 @@ function detachParticipantTracks(participant) {
 window.addEventListener("beforeunload", leaveRoomIfJoined);
 
 // Obtain a token from the server in order to connect to the Room.
+function connect() {
 
-document.getElementById("startConversation").onclick = function() {
+  socket.emit("resetMeeteing");
   $.getJSON(url, function(data) {
     socket.emit("takeControl",userName);
     identity = data.identity;
@@ -355,6 +356,7 @@ function beep() {
 $(function () {
 
   previewMyself();
+  connect();
  
   // ------------------ All participants functions ----------------------------
   $('#chatform').submit(function(e){
@@ -381,8 +383,8 @@ $(function () {
   });
 
   $("#buttonBreak" ).click(function() {
-    clearInterval(meetingInterval);
     socket.emit("backToLobby","1");
+    clearInterval(meetingInterval);
   });
 
   $("#btnTakeControl" ).click(function() {
@@ -497,9 +499,7 @@ function startTimer() {
     var seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
     document.getElementById("countdowntimerModorator").innerHTML = minutes + ":" + seconds ;
-    if(distance > 0) {
-      socket.emit("ClientTimer",minutes + ":" + seconds);
-    }
+    socket.emit("ClientTimer",minutes + ":" + seconds);
     console.log(minutes + ":" + seconds);
 
     if(seconds!=lastSeconds) {

@@ -6,6 +6,7 @@ var activeRoom;
 var previewTracks;
 var identity;
 var roomName;
+var roomId;
 var userName;
 var id;
 var gender;
@@ -17,10 +18,10 @@ var remarkId;
 var audioExist;
 var intervalChecker;
 var systemEventId;
-var profileExist = 0;
 
 
 
+systemEventId = getUrlParam("eventId");
 
 var saveRemark = document.getElementById("saveRemark");
 
@@ -37,6 +38,7 @@ if (typeof id === 'string' || id instanceof String) {
 if (typeof r === 'string' || r instanceof String) {
     setCookie("r",r,1);
 }
+
 
 
 
@@ -111,6 +113,7 @@ function trackUnpublished(publication) {
 
 // A new RemoteParticipant joined the Room
 function participantConnected(participant, container) {
+  clearRoom()  
   let selfContainer = document.createElement("div");
   selfContainer.id = `participantContainer-${participant.identity}`;
 
@@ -148,34 +151,29 @@ function connect() {
     // document.getElementById("room-controls").style.display = "block";
 
       // Bind button to join Room.
-
-      var connectOptions;
       
-        if(r !=null) {
-          connectOptions = {
-            name:  "Room" + r,
-            logLevel: "error",
-            type : "small-group",
-          };
-  
-        }
-        else {
-          connectOptions = {
-            name:  "Lobby" ,
-            logLevel: "error",
-            type : "group",
-            audio : false,
-            video : {width:300},
-          };
-        }
+ 
+        roomName = "Room" + r;
+ 
+        log("Joining room '" + roomName + "'...");
+        var connectOptions = {
+          name: roomName,
+          logLevel: "error",
+          type : roomType,
+          audio : true,
+          video:{width:800}
+          
+        };
 
-        log("Joining room '" + connectOptions.name + "'...");
-     
+
         // Join the Room with the token from the server and the
         // LocalParticipant's Tracks.
         Video.connect(data.token, connectOptions).then(roomJoined, function(error) {
           log("Could not connect to Twilio: " + error.message);
         });
+    
+      // Bind button to leave Room.
+    
     });
 }
 
@@ -208,13 +206,9 @@ function roomJoined(room) {
     log("Already in Room: '" + participant.identity + "'");
     var identityAry = participant.identity.split("#");
     otherUserId = identityAry[3]; 
-    if (identityAry[2] == "1" || r !=null) {
       participantConnected(participant, modorateMediaContainer);
-    } else {
-      participantConnected(participant, remoteMediaContainer);
       loadProfile(otherUserId);
       loadRemark(otherUserId);
-    }
     
   });
 
@@ -223,16 +217,11 @@ function roomJoined(room) {
     log("Joining: '" + participant.identity + "'");
     var identityAry = participant.identity.split("#");
     otherUserId = identityAry[3]; 
-    if (identityAry[2] == "1" || r !=null) {
       participantConnected(participant, modorateMediaContainer);
-    } else {
-      participantConnected(participant, remoteMediaContainer);
-      if(parseInt(otherUserId) > 0) {
-        loadProfile(otherUserId);
-        loadRemark(otherUserId);
-      }
-
-    }
+      loadProfile(otherUserId);
+      loadRemark(otherUserId);
+   
+   
   });
 
   // When a Participant leaves the Room, detach its Tracks.
@@ -303,49 +292,27 @@ function beep() {
 
 //  Document.ready init
 $(function () {
-
   userName = getUrlParam("userName");
   gender = getUrlParam("gender");
   id = getUrlParam("id");
   r = getUrlParam("r");
-  systemEventId = getUrlParam("eventId");
+  roomId = getUrlParam("room_id");
 
   url = "/token?1=1&userName=" + userName + "&gender=" + gender + "&id=" + id;
 
-  updateAttendingStatus();
-  checkPresentation();
-  connect()
-  clearRoom()
-  myLocationNow(id,userName,gender)
+  connect();
+  clearRoom();
+  myLocationNow();
 
   // update table number
 
   if(typeof(r) !="undefined" && r!=null) {
-    document.querySelector("#tableNumber").innerText = "שולחן מספר " + roomNumber;
+    document.querySelector("#tableNumber").innerText = "שולחן מספר " + r;
   }
-
-
-  
-
-  $("#btnConnect" ).click(function() {
-    connect();
-    document.querySelector("#btnConnect").innerText = "מחובר";
-    
-  });
 
   $("#txtUserName").text( decodeURI(userName));
   // ------------------ All participants functions ----------------------------
-  $('#chatform').submit(function(e){
-    e.preventDefault(); // prevents page reloading
-    socket.emit('chat message', decodeURI(userName) + ": " + $('#messageTxt').val());
-    $('#messageTxt').val('');
-    return false;
-  });
 
-  // Add chat line from everyone (include me) when event occur
-  socket.on('chat message', function(msg){
-    $('#messages').append($('<li>').text(msg));
-  });
 
   socket.on('ClientTimer', function(msg){
     if(typeof(document.querySelector("#countdowntimer")) != 'undefined' && document.querySelector("#countdowntimer") != null) {
@@ -353,38 +320,14 @@ $(function () {
     }
   });
 
-
-
-
   socket.on('broadcastMessage', function(msg){
     toastr.options.showMethod = 'slideDown';
     toastr.options.hideMethod = 'slideUp';
     toastr.options.closeMethod = 'slideUp';
     toastr.options.closeButton = true;
     toastr.options.tapToDismiss = false;
-    
-    
     toastr.warning(msg,{timeOut: 5000})
   });
-
-
-
-  
-
-  
-  socket.on('startPesentation', function(msg){
-    // hide presentor
-    document.querySelector("#participantContainer-Modorator\\#undefined\\#1\\#\\#1586726753363 > video:nth-child(2)")
-    .style.position = "absolute";
-    document.querySelector("#participantContainer-Modorator\\#undefined\\#1\\#\\#1586726753363 > video:nth-child(2)")
-    .style.width = "150px";
-    document.querySelector("#participantContainer-Modorator\\#undefined\\#1\\#\\#1586726753363 > video:nth-child(2)")
-    .style.right = "30px";
-    document.querySelector("#participantContainer-Modorator\\#undefined\\#1\\#\\#1586726753363 > video:nth-child(4)")
-    .style.width = "820px";
-  });
-
-  
 
   socket.on('buzzer', function(msg){
     beep();
@@ -397,30 +340,16 @@ $(function () {
   // this event fires 30 sec before room is about to change and it will erase participant other side video & audio
   socket.on('clearParticipantWindow', function(msg){
     document.querySelector("#modorate-media").innerHTML="";
-    loadProfileImage(otherUserId);
+    //loadProfileImage(otherUserId);
   });
-  
-  // this event fires when moderator is change and it will erase moderator video & audio
-  socket.on('takeControl', function(msg){
-    if(roomName == 'Lobby') {
-      document.querySelector("#modorate-media").innerHTML="";
-    }
-  });
-  
-  socket.on("unsharescreen", function(msg) {
-    var presentation = document.querySelector("#modorate-media>div>video:nth-child(4)")
-    var parent = document.querySelector("#modorate-media>div")
-    parent.removeChild(presentation);
-  });
-
-
-//   socket.on('start meeting', function(msg){
     
+//   socket.on('start meeting', function(msg){
 //     $.get( "/load-participants")
 //     .done(function( data ) {
 //         var roomNumber = 0;  
 //         var roundNumber = msg;
-//         var loadedPar = JSON.parse(data);
+//         //var loadedPar = JSON.parse(data);
+//         var loadedPar = data;
 //         var thisRound = loadedPar[parseInt(roundNumber) - 1]
 //         if(gender == 'm') {
 //             var i = 1
@@ -431,6 +360,7 @@ $(function () {
 //                 }
 //                 i++;
 //             })
+//             document.location.href='/room?r=' + roomNumber + "&userName=" + userName +  "&gender=" + gender + "&id=" + id + "&auto_connect=1";
 //         }
 
 //         else {
@@ -442,17 +372,18 @@ $(function () {
 //                 }
 //                 i++;
 //             })
+//             document.location.href='/room?r=' + roomNumber + "&userName=" + userName +  "&gender=" + gender + "&id=" + id + "&auto_connect=1";
 //         }
 
+        
 //         console.log('/room?r=' + roomNumber + "&userName=" + userName +  "&gender=" + gender + "&id=" + id +  "&auto_connect=1");
 //         document.location.href='/room?r=' + roomNumber + "&userName=" + userName +  "&gender=" + gender + "&id=" + id + "&auto_connect=1";
 //     });
 // });
 
-
-socket.on('backToLobby', function(msg){
-    document.location.href="/application/lobby.html?userName=" + userName +  "&gender=" + gender + "&id=" + id;
-  });
+// socket.on('backToLobby', function(msg){
+//     document.location.href="/application/lobby.html?userName=" + userName +  "&gender=" + gender + "&id=" + id;
+// });
 
 
 if(saveRemark != null) {
@@ -507,6 +438,7 @@ function setCookie(cname, cvalue, exdays) {
 
 
   function loadProfileImage(id) {
+    return false;
     $.get( "/profileImage?id=" + id)
     .done(function(data) {
       var img = document.createElement('img');
@@ -522,158 +454,80 @@ function setCookie(cname, cvalue, exdays) {
 
     $.get( "/profile?id=" + id)
       .done(function( data ) {
-        if(profileExist == 0) {
-        var i = 1;
-        var profileContents = document.getElementById("profileContents");
-        if(data.bearth_year_public == '1') {
-          appendProfileElement(i,'',profileContents,"newLine");
-          var row = document.getElementById("profile-" + i);
-          appendProfileElement('birthYearLabel','שנת לידה',row,"text2")
-          appendProfileElement('birthYearLabel', data.bearth_year,row,"text")
-        }
-        i++;
 
-        if(data.relationship_public == '1') {
-          appendProfileElement(i,'',profileContents,"newLine");
-          var row = document.getElementById("profile-" + i);
-          appendProfileElement('birthYearLabel','מצב משפחתי',row,"text2")
-          appendProfileElement('birthYearLabel', data.relationship,row,"text")
-        }i++;
+        document.querySelector("#profileContents").innerHTML = data;
 
-        if(data.height_public == '1') {
-          appendProfileElement(i,'',profileContents,"newLine");
-          var row = document.getElementById("profile-" + i);
-          appendProfileElement('birthYearLabel','גובה',row,"text2")
-          appendProfileElement('birthYearLabel', data.height,row,"text")
-        }i++;
+        // var i = 1;
+        // var profileContents = document.getElementById("profileContents");
+        // if(data.bearth_year_public == '1') {
+        //   appendProfileElement(i,'',profileContents,"newLine");
+        //   var row = document.getElementById("profile-" + i);
+        //   appendProfileElement('birthYearLabel','שנת לידה',row,"text2")
+        //   appendProfileElement('birthYeartext', data.bearth_year,row,"text")
+        // }
+        // i++;
 
-        if(data.has_kids_public == '1') {
-          appendProfileElement(i,'',profileContents,"newLine");
-          var row = document.getElementById("profile-" + i);
-          appendProfileElement('birthYearLabel','ילדים',row,"text2")
-          appendProfileElement('birthYearLabel', data.has_kids,row,"text")
-        }i++;
+        // if(data.relationship_public == '1') {
+        //   appendProfileElement(i,'',profileContents,"newLine");
+        //   var row = document.getElementById("profile-" + i);
+        //   appendProfileElement('FamiltLabel','מצב משפחתי',row,"text2")
+        //   appendProfileElement('FamiltText', data.relationship,row,"text")
+        // }i++;
 
-        if(data.education_public == '1') {
-          appendProfileElement(i,'',profileContents,"newLine");
-          var row = document.getElementById("profile-" + i);
-          appendProfileElement('birthYearLabel','השכלה',row,"text2")
-          appendProfileElement('birthYearLabel', data.education,row,"text")
-        }i++;
+        // if(data.height_public == '1') {
+        //   appendProfileElement(i,'',profileContents,"newLine");
+        //   var row = document.getElementById("profile-" + i);
+        //   appendProfileElement('heightLabel','גובה',row,"text2")
+        //   appendProfileElement('heightText', data.height,row,"text")
+        // }i++;
 
-        if(data.proffesion_public == '1') {
-          appendProfileElement(i,'',profileContents,"newLine");
-          var row = document.getElementById("profile-" + i);
-          appendProfileElement('birthYearLabel','עיסוק',row,"text2")
-          appendProfileElement('birthYearLabel', data.proffesion,row,"text")
-        }i++;
+        // if(data.has_kids_public == '1') {
+        //   appendProfileElement(i,'',profileContents,"newLine");
+        //   var row = document.getElementById("profile-" + i);
+        //   appendProfileElement('childLabel','ילדים',row,"text2")
+        //   appendProfileElement('childText', data.has_kids,row,"text")
+        // }i++;
 
-        if(data.smoke_public == '1') {
-          appendProfileElement(i,'',profileContents,"newLine");
-          var row = document.getElementById("profile-" + i);
-          appendProfileElement('birthYearLabel','מעשן/ת',row,"text2")
-          appendProfileElement('birthYearLabel', data.smoke,row,"text")
-        }i++;
-        profileExist = 1;
-      }
+        // if(data.education_public == '1') {
+        //   appendProfileElement(i,'',profileContents,"newLine");
+        //   var row = document.getElementById("profile-" + i);
+        //   appendProfileElement('eduLabel','השכלה',row,"text2")
+        //   appendProfileElement('eduText', data.education,row,"text")
+        // }i++;
+
+        // if(data.proffesion_public == '1') {
+        //   appendProfileElement(i,'',profileContents,"newLine");
+        //   var row = document.getElementById("profile-" + i);
+        //   appendProfileElement('jobLabel','עיסוק',row,"text2")
+        //   appendProfileElement('jobText', data.proffesion,row,"text")
+        // }i++;
+
+        // if(data.smoke_public == '1') {
+        //   appendProfileElement(i,'',profileContents,"newLine");
+        //   var row = document.getElementById("profile-" + i);
+        //   appendProfileElement('smokeLabel','מעשן/ת',row,"text2")
+        //   appendProfileElement('smokeText', data.smoke,row,"text")
+        // }i++;
         
-    });
+      });
   }
-
-  function makeid(length) {
-    var result           = '';
-    var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    var charactersLength = characters.length;
-    for ( var i = 0; i < length; i++ ) {
-       result += characters.charAt(Math.floor(Math.random() * charactersLength));
-    }
-    return result;
- }
-
-
-
-
-
-
-
-function checkPresentation() {
-  intervalChecker = setInterval(function() {
-    if(document.querySelector("#modorate-media>div>video:nth-child(4)")) {
-      
-      var presentor = document.querySelector("#modorate-media>div>video:nth-child(2)")
-      if(typeof(presentor) != 'undefined' && presentor != null) {
-          presentor.style.width = "150px";
-          presentor.style.position = "absolute";
-          presentor.style.right = "30px";
-          document.querySelector("#modorate-media>div>video:nth-child(4)").style.width = "640px";
-      }
-      else {
-        var presentor = document.querySelector("#modorate-media>div>video:nth-child(3)")
-        if(typeof presentor != 'undefined'  && presentor != null) {
-          presentor.style.width = "150px";
-          presentor.style.position = "absolute";
-          presentor.style.right = "30px";
-          document.querySelector("#modorate-media>div>video:nth-child(4)").style.width = "640px";
-        }
-      }
-    }
-    else {
-      var presentor = document.querySelector("#modorate-media>div>video:nth-child(2)")
-      if(typeof(presentor) != 'undefined' && presentor != null) {
-          presentor.style.width = "800px";
-          presentor.style.position = "relative";
-          presentor.style.right = "0px";
-      }
-      else {
-        var presentor = document.querySelector("#modorate-media>div>video:nth-child(3)")
-        if(typeof presentor != 'undefined' && presentor != null ) {
-          presentor.style.width = "800px";
-          presentor.style.position = "relative";
-          presentor.style.right = "0px";
-        }
-      }      
-    }
-
-  },1000);
-}
-
-function updateAttendingStatus() {
-  $.get("/updateStatus?user_id=" + id + "&event_id=" + systemEventId);
-  if(typeof roomNumber != 'undefined')
-    document.querySelector("tableNumber").text = " הנך נמצא בשולחן מספר " + roomNumber;
-}
-
 
 function clearRoom() {
-  if(r!="" && r != null) {
-    if(document.querySelector("profileContents") != null)
+   if(document.querySelector("profileContents") != null)
       document.querySelector("profileContents").innerHTML = ""
-  }
-  if(document.querySelector("modorator-media") !=null ) {
-    document.querySelector("modorator-media").innerHTML=""
-  }
-  
+  if(document.querySelector("modorator-media") !=null ) 
+     document.querySelector("modorator-media").innerHTML=""
 }
 
-
-function myLocationNow(id,userName,gender) {
+function myLocationNow() {
   var intervalLocation = setInterval(function() {
     $.get( "/myLocationNow?id=" + id + "&userName=" + userName +  "&gender=" + gender)
     .done(function(data) {
       if(decodeURI(document.location.href)!=decodeURI(data)) {
         document.location.href=data
       }
-  
-    })
+  })
 
   },5000)
 }
-
-
-
-
-
-
-
-
 

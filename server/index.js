@@ -7,6 +7,9 @@
  * process.env.TWILIO_API_SID
  * process.env.TWILIO_API_SECRET
  */
+
+
+
 require("dotenv").load();
 
 if(process.env.HTTPS ) {
@@ -27,6 +30,17 @@ var con = mysql.createConnection({
   password: ""
 });
 
+var counter1 = 0;
+var roomsOrder = {}
+var meetingStatus = 0; // 0 = didnt started, 1 = started at lobby, 2 = private mettings, 3 = break, 4= private mettings ended back to lobby , 5 = metting ended
+var currentRound = 0;
+
+
+
+
+
+
+
 con.connect(function(err) {
   if (err) throw err;
   console.log("Mysql Connected!");
@@ -45,6 +59,18 @@ app.use("/application", express.static(applicationPath));
 /**
  * Default to the Date application.
  */
+
+app.get("/counter", function(request, response) {
+  counter1++;
+  response.send(String(counter1));
+})
+
+
+
+
+
+
+
 app.get("/", function(request, response) {
   var modorator = request.query.modorator || 0;
   var userName = request.query.userName || 0;
@@ -107,10 +133,11 @@ app.get("/check-event",function(request, response) {
 // ----------------- Participants functions ---------------------------
 
 // save participants data into JSON format 
-app.get("/save-participants",function(request, response) {
-  //var participants = request.query.participantsIds;
+app.get("/save-participants",function(request, response) { 
+  meetingStatus = 2; // private meetings
   var rooms = request.query.rooms;
-  console.log(rooms);
+  roomsOrder = JSON.stringify(rooms);
+  console.log(roomsOrder);
   fs.writeFileSync('rooms.json', rooms, (err) => {
     //if (err) throw err;
     console.log('Data written to file');
@@ -120,11 +147,9 @@ app.get("/save-participants",function(request, response) {
 });
 
 app.get("/load-participants",function(request, response) {
-  var dataSend;
   fs.readFile('rooms.json', (err, data) => {
-    //if (err) throw err;
-    response.send(new Buffer(data));
-    
+    // response.send(new Buffer(data));
+    response.send(roomsOrder);
   });
 });
 
@@ -135,10 +160,21 @@ app.get("/profile",function(request, response) {
     id = parseInt(id)
 	  if(isNaN(id)) {id=0}
     var sql = "SELECT * FROM speedate.responder_users where id=" + id;
-    console.log(sql);
+   
     con.query(sql , function (err, result) {
       //if (err) throw err;
-      response.send(result[0]);
+      var html = "<table>"
+      var data = result[0];
+      if(data.bearth_year_public == '1') {html = html + "<tr><th>שנת לידה</th><td>" + data.bearth_year + "</td></tr>"}
+      if(data.relationship_public == '1') {html = html + "<tr><th>מצב משפחתי</th><td>" + data.relationship + "</td></tr>"}
+      if(data.height_public == '1') {html = html + "<tr><th>גובה</th><td>" + data.height + "</td></tr>"}
+      if(data.has_kids_public == '1') {html = html + "<tr><th>ילדים</th><td>" + data.has_kids + "</td></tr>"}
+      if(data.education_public == '1') {html = html + "<tr><th>השכלה</th><td>" + data.education + "</td></tr>"}
+      if(data.proffesion_public == '1') {html = html + "<tr><th>עיסוק</th><td>" + data.proffesion + "</td></tr>"}
+      if(data.smoke_public == '1') {html = html + "<tr><th>מעשן/ת</th><td>" + data.smoke + "</td></tr>"}
+      html = html + " </table>"
+
+      response.send(html);
     });
   }
   else{
@@ -161,7 +197,7 @@ app.get("/profileImage",function(request, response) {
   if( id != null && !isNaN(id)) {
     id = parseInt(id)
 	  if(isNaN(id)) {id=0}
-    var sql = "SELECT * FROM speedate.profile_picture where user_id=" + id + " AND application_id='peedateisrael.co.il' Limit 1";
+    var sql = "SELECT * FROM speedate.profile_picture where user_id=" + id + " AND application_id='speedateisrael.co.il' Limit 1";
     console.log(sql);
     con.query(sql , function (err, result) {
       //if (err) throw err;
@@ -173,15 +209,6 @@ app.get("/profileImage",function(request, response) {
   }
 
 });
-
-
-
-
-
-
-
-
-
 
 app.get("/read-rem",function(request, response) {
   var id = request.query.id;
@@ -213,6 +240,24 @@ app.get("/save-rem",function(request, response) {
   });
 });
 
+
+app.get("/myLocationNow",function(request, response) {
+  var Id = request.query.id;
+  var userName = request.query.userName || "";
+  var gender = request.query.gender || "";
+  
+  if (meetingStatus == 0 || meetingStatus == 1 || meetingStatus == 4) {
+    response.send(process.env.SERVER_NAME + "/application/lobby.html?userName=" + userName + "&gender=" + gender + "&id=" + Id);
+  }
+  if(meetingStatus == 2) {
+    fs.readFile('rooms.json', (err, data) => {
+      var rooms = data.toString();
+      console.log("jsonrooms" + rooms);
+      var roomId = returnMyRoom(Id,userName,gender,rooms,currentRound);
+      response.send(process.env.SERVER_NAME + "/application/room.html?r=" + roomId + "&userName=" + userName + "&gender=" + gender + "&id=" + Id);
+    });
+  }
+});
 
 
 
@@ -296,42 +341,46 @@ io.on('connection', function(socket){
   });
 
   socket.on('start meeting', function(msg){
-    //console.log('message: ' + msg);
-    io.emit('start meeting', msg);
+    console.log('message: ' + msg);
+    currentRound = parseInt(msg);
+    console.log('--------------------------------- ROUND : ' + currentRound);
+    //io.emit('start meeting', msg);
   });  
 
   socket.on('ClientTimer', function(msg){
-    //console.log('message: ' + msg);
+    console.log('ClientTimer: ' + msg);
     io.emit('ClientTimer', msg);
   });  
 
   socket.on('buzzer', function(msg){
-    //console.log('message: ' + msg);
+    console.log('message: ' + msg);
     io.emit('buzzer', msg);
   });  
 
   socket.on('backToLobby', function(msg){
-    //console.log('message: ' + msg);
-    io.emit('backToLobby', msg);
+    console.log('message: ' + msg);
+    meetingStatus = 4;
+
+    //io.emit('backToLobby', msg);
   });  
 
   socket.on('unsharescreen', function(msg){
-    //console.log('message: ' + msg);
+    console.log('message: ' + msg);
     io.emit('unsharescreen', msg);
   });  
 
   socket.on('breakRound', function(msg){
-    //console.log('message: ' + msg);
+    console.log('message: ' + msg);
     io.emit('breakRound', msg);
   });  
 
   socket.on('EndOfMeeting', function(msg){
-    //console.log('message: ' + msg);
+    console.log('message: ' + msg);
     io.emit('EndOfMeeting', msg);
   });  
 
   socket.on('clearParticipantWindow', function(msg){
-    //console.log('message: ' + msg);
+    console.log('message: ' + msg);
     io.emit('clearParticipantWindow', msg);
   });  
 
@@ -345,15 +394,53 @@ io.on('connection', function(socket){
 
   socket.on('startPesentation', function(msg){
     io.emit('startPesentation', msg);
-  });    
+  });   
+  socket.on('resetMeeteing', function(msg){
+    currentRound = 0;
+  });  
+  
 
   
-  
-
-  
-
-
-
-
-
 });
+
+
+
+function returnMyRoom(id, userName,gender,roomsOrder,currentRound){
+  var roomNumber = 0;  
+  var roundNumber = currentRound;
+  roomsOrder = JSON.parse(roomsOrder);
+  console.log("returnMyRoom parsing round:" + roundNumber)
+  try {
+    var thisRound = roomsOrder[parseInt(roundNumber) - 1]
+  }
+  catch (err) {
+    console.log(err)
+  }
+
+  console.log("returnMyRoom roomsOrder:" + roomsOrder)
+  console.log("returnMyRoom parsing thisRound:" + thisRound)
+  var i = 1
+  if(gender == 'm') {
+  thisRound.mens.forEach(idd => {
+      if(idd.includes(decodeURI(userName)) && idd.includes(decodeURI(id))) {
+          let ii=i;
+          roomNumber = ii;
+      }
+      i++;
+  })
+}
+else {
+  thisRound.females.forEach(idd => {
+    if(idd.includes(decodeURI(userName)) && idd.includes(decodeURI(id))) {
+          let ii=i;
+          roomNumber = ii;
+      }
+      i++;
+  })
+}
+  return roomNumber;
+}
+
+
+
+
