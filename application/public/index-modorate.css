@@ -50,6 +50,7 @@ hr {
 }
 
 #messages {
+  margin-top: 30px;
   min-height: 455px;
   background-color: azure;
   border: solid;
@@ -57,8 +58,8 @@ hr {
   border-color: #b80d06;
   border-radius: 15px;
   text-align: right;
-  overflow: scroll;
-  max-height: 600px;
+  overflow-y: auto;
+  max-height: 455px;
 }
 
 #send-msg {
@@ -80,48 +81,62 @@ div#controls {
   flex-direction: row;
 }
 
+#modorate-media video {
+ border: solid;
+  border-width: thin;
+  border-color: #b80d06;
+  border-radius: 30px; 
+}
+
 #modorate-media {
   display: flex;
   flex-direction: row;
   justify-content: center;
   min-height: 500px;
-  background-color: #212529;
+  /* background-color: #212529; */
   color: aliceblue;
   text-align: center;
   margin-right: 15px;
-  border: solid;
+  /* border: solid;
   border-width: thin;
   border-color: #b80d06;
-  border-radius: 15px;
+  border-radius: 15px; */
   margin-right: 15px;
   
 }
 
+#remote-media video {
+  border: solid;
+   border-width: thin;
+   border-color: #b80d06;
+   border-radius: 30px; 
+ }
+
 #remote-media {
-  display: flex;
+  /* display: flex;
   flex-direction: row;
-  justify-content: center;
+  justify-content: center; */
   min-height: 200px;
   width: 100%;
-  background-color: #212529;
+  display: contents;
+    /* flex-direction: row;
+  /* background-color: #212529; */
   text-align: center;
   margin-right:30px;
   margin-left:30px;
-  border: solid;
+  /* border: solid;
   border-width: thin;
   border-color: #b80d06;
-  border-radius: 15px;
+  border-radius: 15px; */
   color:white;
   
 }
 
 div#remote-media video {
   border: 1px solid #272726;
-  max-width: 30% !important;
-  background-repeat: no-repeat;
-  background-color: lightgrey !important;
-  background-image: url("https://static0.twilio.com/marketing/bundles/archetype/img/logo-wordmark.svg");
-  background-position: 50%;
+  max-width: 165px;
+  max-height: 165px;
+  margin-right: 20px;
 }
 
 div#controls div#room-controls,

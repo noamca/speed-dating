@@ -18,7 +18,7 @@
                     <img src="logo.png" style="width: 90px;">
                 </div>
                 <div class="col-sm-9 fr">
-                        <h1 align="center">ברוכים הבאים לספיד דייט ישראל</h1>
+                        <h1 align="center" style="font-size: 60px;">ברוכים הבאים לספיד דייט ישראל</h1>
                 </div>
 
                 
@@ -27,8 +27,8 @@
         
     <div class="row">
         <div class="col-sm-12">
-            <div class="textDiv" id='txtUserName'></div>
-            <div class="textDiv" id='txtUserName'>הנך נמצא/ת בלובי</div>
+            <div class="textDiv" id='txtUserName' style="font-size: 30px;"></div>
+            <div class="textDiv" id='txtLobbyMessage'></div>
             
         </div>
     </div>  
@@ -39,12 +39,12 @@
     </div>        
 
     <div class="row">
-        <div class="col-sm-3 fr">
+        <div class="col-sm-3 fr" style="margin-right: 30px;">
             <div id="messages"></div>
             <div id="send-msg">
                 <form id="chatform">
                     <input type="text" id="messageTxt" class="chat-field">
-                    <input type="submit"  class="btn btn-primary" style="width:28%" value="שלח">
+                    <input type="submit"  class="btn btn-primary" style="width: 24%; background: brown; border-radius: 10px;" value="שלח">
                           
                 </form>            
             </div>
@@ -52,6 +52,7 @@
       
         <div class="col-sm-8 fr">
             <div id="modorate-media"></div>
+            <div id="presentor-media" style="display: none;"></div>
         </div>
 
         <div class="col-sm-1 fr"></div>
@@ -74,15 +75,16 @@
     </div>
 
     <div class="row">
-        <div id="my-preview-video" class="col-sm-3">&nbsp;</div>
-        <div id="remote-media" class="col-sm-8">&nbsp;</div>
-        <div id="my-preview-video" class="col-sm-1">&nbsp;</div>
+        
+        <div id="remote-media" class="col-sm-12">&nbsp;</div>
+        
     </div>
 
     
     <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    
     <script>
         //var socket = io();
         var url =  document.location.href
@@ -92,6 +94,8 @@
       </script>
       
        
-          <script src="index-client.js"></script>    
+          <script src="index-client.js"></script> 
+          <script src="NoSleep.min.js"></script>   
+          <script>var noSleep = new NoSleep(); </script>
  </body>
 </html>

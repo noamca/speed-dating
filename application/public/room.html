@@ -18,15 +18,16 @@
                     <img src="logo.png" style="width: 90px;">
                 </div>
                 <div class="col-sm-9 fr">
-                    <div class="textDiv">ספידייט שולחן פרטי</div>
-                    <div class="textDiv" id='txtUserName'></div>
+                    
+                    <div class="textDiv" id='txtLobbyMessage'></div>
                 </div>
-
-                <div class="fr textDiv" id="countdowntimer" style="float: left;"></div><div id="clock" style="float: left;"><img src="clock.png" style="width:30px;"></div>
+                <div id="clock" style="float: left;"><img src="clock.png" style="width:100px;"></div>  
+                <div class="fr textDiv" id="countdowntimer" style="float: left; font-size: 60px;"></div>
+                
         </div>
     </div>
     <div class="row">
-        <div class="col-sm-12 textDiv" id="tableNumber"></div> 
+        <div class="col-sm-12 textDiv" id="tableNumber" style="font-size: 40px;"></div> 
     </div>   
 
     <div class="row">
@@ -39,9 +40,9 @@
 
         <div class="col-sm-2 fr">
           <div class="row">
-            <div class="col-sm-12 fr text2">פרופיל</div>
+            <div class="col-sm-12 fr text2" style="color: white;font-size: 30px;">פרופיל</div>
           </div>
-          <div class="row" id='profileContents'></div>  
+          <div class="row" id='profileContents' style="direction: rtl; font-size: 20px; color:whilte" ></div>  
         </div>
         
         <div class="col-sm-1 fr">&nbsp;</div>
@@ -54,9 +55,9 @@
             <div id="send-msg">
                 <div class="row textDiv" margin-l-r>מקום לרשום חוות דעת פרטית על המועמד</div>
                 <form id="comments">
-                    <textarea id="messageTxt"  cols=80 rows=5></textarea>
+                    <textarea id="messageTxt"  cols=80 rows=5 style="color: white;background: #3f6e9c;border-radius: 10px; border-color: brown;"></textarea>
                 </form>  
-                <div class="row textDiv"><button id="saveRemark" class="btn btn-primary margin-l-r">שמירה</button></div>          
+                <div class="row textDiv"><button id="saveRemark" class="btn btn-primary margin-l-r" style="background-color: brown;">שמירה</button></div>          
             </div>
         </div>
         <div class="col-sm-3 fr">&nbsp;</div>
@@ -82,7 +83,8 @@
       </script>
       
      
-          <script src="index-room.js"></script>    
+          <script src="index-room.js"></script>  
+          <script src="NoSleep.min.js"></script>  
 
 
 

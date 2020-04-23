@@ -15,9 +15,16 @@ var r; // current Round/Table
 var roomType
 var otherUserId;
 var remarkId;
-var audioExist;
-var intervalChecker;
 var systemEventId;
+
+//var noSleep = new NoSleep();
+
+
+toastr.options.showMethod = 'slideDown';
+toastr.options.hideMethod = 'slideUp';
+toastr.options.closeMethod = 'slideUp';
+toastr.options.closeButton = true;
+toastr.options.tapToDismiss = false;
 
 
 
@@ -38,10 +45,6 @@ if (typeof id === 'string' || id instanceof String) {
 if (typeof r === 'string' || r instanceof String) {
     setCookie("r",r,1);
 }
-
-
-
-
 
 // Attach the Track to the DOM.
 function attachTrack(track, container) {
@@ -113,7 +116,7 @@ function trackUnpublished(publication) {
 
 // A new RemoteParticipant joined the Room
 function participantConnected(participant, container) {
-  clearRoom()  
+  //clearRoom()  
   let selfContainer = document.createElement("div");
   selfContainer.id = `participantContainer-${participant.identity}`;
 
@@ -144,6 +147,7 @@ window.addEventListener("beforeunload", leaveRoomIfJoined);
 
 // Obtain a token from the server in order to connect to the Room.
 
+// -------------------------------------------------------------------- CONNECT   -------------------------------------------------------------------- 
 
 function connect() {
     $.getJSON(url, function(data) {
@@ -158,10 +162,10 @@ function connect() {
         log("Joining room '" + roomName + "'...");
         var connectOptions = {
           name: roomName,
-          logLevel: "error",
-          type : roomType,
+          logLevel: "debug",
+          type : 'small-group',
           audio : true,
-          video:{width:800}
+          video:{width:600}
           
         };
 
@@ -290,7 +294,12 @@ function beep() {
 
 
 
-//  Document.ready init
+//  --------------------------------------------------------------------------- Document.ready init ---------------------------------
+//  --------------------------------------------------------------------------- Document.ready init----------------------------------
+//  --------------------------------------------------------------------------- Document.ready init -----------------------------------
+
+
+
 $(function () {
   userName = getUrlParam("userName");
   gender = getUrlParam("gender");
@@ -298,19 +307,30 @@ $(function () {
   r = getUrlParam("r");
   roomId = getUrlParam("room_id");
 
+  if(gender=='m') {
+    document.querySelector("#txtLobbyMessage").innerText = decodeURI(userName) + ", " + "הנך נמצא בחדר מספר " + r
+  }
+  else {
+    document.querySelector("#txtLobbyMessage").innerText = decodeURI(userName) + ", " +  "הנך נמצאת בחדר מספר " + r
+  }
+
+
+
+  //enableNoSleep();
+
   url = "/token?1=1&userName=" + userName + "&gender=" + gender + "&id=" + id;
 
   connect();
-  clearRoom();
+  //clearRoom();
   myLocationNow();
 
   // update table number
 
-  if(typeof(r) !="undefined" && r!=null) {
-    document.querySelector("#tableNumber").innerText = "שולחן מספר " + r;
-  }
+  // if(typeof(r) !="undefined" && r!=null) {
+  //   document.querySelector("#tableNumber").innerText = "שולחן מספר " + r;
+  // }
 
-  $("#txtUserName").text( decodeURI(userName));
+  //$("#txtUserName").text( decodeURI(userName));
   // ------------------ All participants functions ----------------------------
 
 
@@ -321,11 +341,7 @@ $(function () {
   });
 
   socket.on('broadcastMessage', function(msg){
-    toastr.options.showMethod = 'slideDown';
-    toastr.options.hideMethod = 'slideUp';
-    toastr.options.closeMethod = 'slideUp';
-    toastr.options.closeButton = true;
-    toastr.options.tapToDismiss = false;
+    
     toastr.warning(msg,{timeOut: 5000})
   });
 
@@ -343,47 +359,6 @@ $(function () {
     //loadProfileImage(otherUserId);
   });
     
-//   socket.on('start meeting', function(msg){
-//     $.get( "/load-participants")
-//     .done(function( data ) {
-//         var roomNumber = 0;  
-//         var roundNumber = msg;
-//         //var loadedPar = JSON.parse(data);
-//         var loadedPar = data;
-//         var thisRound = loadedPar[parseInt(roundNumber) - 1]
-//         if(gender == 'm') {
-//             var i = 1
-//             thisRound.mens.forEach(idd => {
-//                 if(idd.includes(decodeURI(userName))) {
-//                     let ii=i;
-//                     roomNumber = ii;
-//                 }
-//                 i++;
-//             })
-//             document.location.href='/room?r=' + roomNumber + "&userName=" + userName +  "&gender=" + gender + "&id=" + id + "&auto_connect=1";
-//         }
-
-//         else {
-//             var i = 1
-//             thisRound.females.forEach(idd => {
-//                 if(idd.includes(decodeURI(userName))) {
-//                     let ii=i;
-//                     roomNumber = ii;
-//                 }
-//                 i++;
-//             })
-//             document.location.href='/room?r=' + roomNumber + "&userName=" + userName +  "&gender=" + gender + "&id=" + id + "&auto_connect=1";
-//         }
-
-        
-//         console.log('/room?r=' + roomNumber + "&userName=" + userName +  "&gender=" + gender + "&id=" + id +  "&auto_connect=1");
-//         document.location.href='/room?r=' + roomNumber + "&userName=" + userName +  "&gender=" + gender + "&id=" + id + "&auto_connect=1";
-//     });
-// });
-
-// socket.on('backToLobby', function(msg){
-//     document.location.href="/application/lobby.html?userName=" + userName +  "&gender=" + gender + "&id=" + id;
-// });
 
 
 if(saveRemark != null) {
@@ -395,6 +370,9 @@ if(saveRemark != null) {
         .done(function(data) {
           if (data) {
             remarkId = data.result
+            toastr.warning("ההערה נשמרה",{timeOut: 5000})
+            document.querySelector("#messageTxt").value = ""
+
           }
         }) 
     };
@@ -457,58 +435,7 @@ function setCookie(cname, cvalue, exdays) {
 
         document.querySelector("#profileContents").innerHTML = data;
 
-        // var i = 1;
-        // var profileContents = document.getElementById("profileContents");
-        // if(data.bearth_year_public == '1') {
-        //   appendProfileElement(i,'',profileContents,"newLine");
-        //   var row = document.getElementById("profile-" + i);
-        //   appendProfileElement('birthYearLabel','שנת לידה',row,"text2")
-        //   appendProfileElement('birthYeartext', data.bearth_year,row,"text")
-        // }
-        // i++;
-
-        // if(data.relationship_public == '1') {
-        //   appendProfileElement(i,'',profileContents,"newLine");
-        //   var row = document.getElementById("profile-" + i);
-        //   appendProfileElement('FamiltLabel','מצב משפחתי',row,"text2")
-        //   appendProfileElement('FamiltText', data.relationship,row,"text")
-        // }i++;
-
-        // if(data.height_public == '1') {
-        //   appendProfileElement(i,'',profileContents,"newLine");
-        //   var row = document.getElementById("profile-" + i);
-        //   appendProfileElement('heightLabel','גובה',row,"text2")
-        //   appendProfileElement('heightText', data.height,row,"text")
-        // }i++;
-
-        // if(data.has_kids_public == '1') {
-        //   appendProfileElement(i,'',profileContents,"newLine");
-        //   var row = document.getElementById("profile-" + i);
-        //   appendProfileElement('childLabel','ילדים',row,"text2")
-        //   appendProfileElement('childText', data.has_kids,row,"text")
-        // }i++;
-
-        // if(data.education_public == '1') {
-        //   appendProfileElement(i,'',profileContents,"newLine");
-        //   var row = document.getElementById("profile-" + i);
-        //   appendProfileElement('eduLabel','השכלה',row,"text2")
-        //   appendProfileElement('eduText', data.education,row,"text")
-        // }i++;
-
-        // if(data.proffesion_public == '1') {
-        //   appendProfileElement(i,'',profileContents,"newLine");
-        //   var row = document.getElementById("profile-" + i);
-        //   appendProfileElement('jobLabel','עיסוק',row,"text2")
-        //   appendProfileElement('jobText', data.proffesion,row,"text")
-        // }i++;
-
-        // if(data.smoke_public == '1') {
-        //   appendProfileElement(i,'',profileContents,"newLine");
-        //   var row = document.getElementById("profile-" + i);
-        //   appendProfileElement('smokeLabel','מעשן/ת',row,"text2")
-        //   appendProfileElement('smokeText', data.smoke,row,"text")
-        // }i++;
-        
+      
       });
   }
 
@@ -529,5 +456,10 @@ function myLocationNow() {
   })
 
   },5000)
+}
+
+function enableNoSleep() {
+  noSleep.enable();
+  document.removeEventListener('touchstart', enableNoSleep, false);
 }
 

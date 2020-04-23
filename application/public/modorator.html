@@ -11,7 +11,7 @@
 
  
     <div class="row">
-        <div class="col-sm-12">
+        <div class="col-sm-12" style="    background: #2968ad;">
             
                 <div class="col-sm-1 fr">
                     <img src="logo.png" style="width: 90px;">
@@ -26,8 +26,10 @@
     </div>
 
     <div class="row">
-        <div class="col-sm-3 fr">
+        <div class="col-sm-3 fr" style="background: #161c21;">
+            <br><br>
             <button id="startConversation" class="btn btn-primary btn-block"> התחל מפגש</button>
+            <button id="btnSetRooms" class="btn btn-primary btn-block"> חלוקת חדרים </button>
             <button id="button-start-meeting" class="btn btn-primary btn-block">התחל מפגשים אישיים</button>
             <button id="buttonBreak" class="btn btn-primary btn-block" >חזרה ללובי - הפסקה</button>
             <button id="buttonContinueMeetings" class="btn btn-primary btn-block">המשך פגישות</button>
@@ -38,7 +40,7 @@
             <br>
             <button id="buttonDisconnectMe" class="btn btn-primary btn-block">  התנתק </button>
             <button id="btnTakeControl" class="btn btn-primary btn-block"> השתלט על המסך </button>
-            <button id="btnSetRooms" class="btn btn-primary btn-block"> חלוקת חדרים </button>
+            
 
             <!--
             <button id="startVideoCapture" class="btn btn-primary btn-block"> שתף וידאו </button>
@@ -52,6 +54,7 @@
             <div class="col-sm-12"><hr></div>
             <div class="col-sm-12 text-div-small" >פגישה מספר: </div>
             <div class="col-sm-12 text-div-small" ><input type="text" id="txtMeetingNumber" style="width: 30px;"> </div>
+            <div class="col-sm-12 text-div-small" id="txtTotalMeetings"> </div>
              
             <div class="col-sm-12 text-div al-ce"><span id='countdowntimerModorator' class="text-div">00:00</span> </div>
             
@@ -67,7 +70,7 @@
             <div id="send-msg">
                 <form id="chatform">
                     <input type="text" id="messageTxt" class="chat-field">
-                    <input type="submit"  class="btn btn-primary" style="width:28%" >
+                    <input type="submit"  class="btn btn-primary" style="width:28%" value="שלח">
                           
                 </form>            
             </div>

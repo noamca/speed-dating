@@ -35,12 +35,6 @@ var roomsOrder = {}
 var meetingStatus = 0; // 0 = didnt started, 1 = started at lobby, 2 = private mettings, 3 = break, 4= private mettings ended back to lobby , 5 = metting ended
 var currentRound = 0;
 
-
-
-
-
-
-
 con.connect(function(err) {
   if (err) throw err;
   console.log("Mysql Connected!");
@@ -65,12 +59,6 @@ app.get("/counter", function(request, response) {
   response.send(String(counter1));
 })
 
-
-
-
-
-
-
 app.get("/", function(request, response) {
   var modorator = request.query.modorator || 0;
   var userName = request.query.userName || 0;
@@ -90,6 +78,7 @@ app.get("/room", function(request, response) {
 app.get("/modorator", function(request, response) {
   var userName = request.query.userName || 0;
   var gender = request.query.gender || 0;
+  meetingStatus = 0;
   response.redirect("/application/modorator.html?userName=" + userName + "&gender=" + gender );
 });
 
@@ -110,7 +99,7 @@ app.get("/start-event",function(request, response) {
   });
 });
 
-// save participants data into JSON format 
+
 app.get("/stop-event",function(request, response) {
   //var participants = request.query.participantsIds;
   var event = 0;
@@ -129,15 +118,20 @@ app.get("/check-event",function(request, response) {
   response.send(data);
 });
 
+app.get("/start-private-meetings",function(request, response) { 
+  console.log('private meetings started');
+  meetingStatus = 2;
+})
+
 
 // ----------------- Participants functions ---------------------------
 
 // save participants data into JSON format 
 app.get("/save-participants",function(request, response) { 
-  meetingStatus = 2; // private meetings
+  //meetingStatus = 0; // private meetings
   var rooms = request.query.rooms;
   roomsOrder = JSON.stringify(rooms);
-  console.log(roomsOrder);
+  //console.log(roomsOrder);
   fs.writeFileSync('rooms.json', rooms, (err) => {
     //if (err) throw err;
     console.log('Data written to file');
@@ -198,7 +192,7 @@ app.get("/profileImage",function(request, response) {
     id = parseInt(id)
 	  if(isNaN(id)) {id=0}
     var sql = "SELECT * FROM speedate.profile_picture where user_id=" + id + " AND application_id='speedateisrael.co.il' Limit 1";
-    console.log(sql);
+    //console.log(sql);
     con.query(sql , function (err, result) {
       //if (err) throw err;
       response.send(result[0]);
@@ -215,7 +209,7 @@ app.get("/read-rem",function(request, response) {
   var userId = request.query.user_id;
   if(isNaN(userId)) userId=0;
   var sql = "SELECT * FROM speedate.users_remarks where my_id=" + id + " and user_id=" + userId;
-  console.log(sql);
+  //console.log(sql);
   con.query(sql , function (err, result) {
     //if (err) throw err;
     response.send(result[0]);
@@ -224,9 +218,9 @@ app.get("/read-rem",function(request, response) {
 
 app.get("/save-rem",function(request, response) {
   var id = request.query.id;
-  var userId = request.query.user-id;
-  var remarkId = request.query.remark-id;
-  var remarkText = request.query.remark-text;
+  var userId = request.query.user_id; 
+  var remarkId = request.query.remark_id;
+  var remarkText = request.query.remark;
   if(remarkId == 0) {
     var sql = "INSERT INTO speedate.users_remarks SET my_id=" + id + ",user_id=" + userId + ",remark='" + remarkText + "'";
   }
@@ -245,18 +239,24 @@ app.get("/myLocationNow",function(request, response) {
   var Id = request.query.id;
   var userName = request.query.userName || "";
   var gender = request.query.gender || "";
+
+  //console.log(meetingStatus);
   
-  if (meetingStatus == 0 || meetingStatus == 1 || meetingStatus == 4) {
+  if (meetingStatus == 0 || meetingStatus == 1 || meetingStatus == 3 || meetingStatus == 4) {
     response.send(process.env.SERVER_NAME + "/application/lobby.html?userName=" + userName + "&gender=" + gender + "&id=" + Id);
   }
-  if(meetingStatus == 2) {
+  else if(meetingStatus == 2) {
     fs.readFile('rooms.json', (err, data) => {
+      console.log("user " + Id + " ask for room")
       var rooms = data.toString();
-      console.log("jsonrooms" + rooms);
       var roomId = returnMyRoom(Id,userName,gender,rooms,currentRound);
       response.send(process.env.SERVER_NAME + "/application/room.html?r=" + roomId + "&userName=" + userName + "&gender=" + gender + "&id=" + Id);
     });
   }
+  else if (meetingStatus == 5 ) {
+    response.send(process.env.SERVER_NAME + "/thanks");
+  }
+
 });
 
 
@@ -271,12 +271,24 @@ app.get("/myLocationNow",function(request, response) {
  */
 app.get("/token", function(request, response) {
   var modorator = request.query.modorator || 0;
+  var presentor = request.query.presentor || 0;
   var userName = request.query.userName || "";
   var gender = request.query.gender || "";
   var id = request.query.id || "";
 
+  var modoratorOrPresentor = modorator
+  if(modorator!=0) {
+    modoratorOrPresentor = 1
+  }
+  else if (presentor!=0) {
+    modoratorOrPresentor = 2
+  }
+  else {
+    modoratorOrPresentor = 0
+  }
+
   var time = new Date().getTime();
-  var identity = userName + "#" + gender + "#" + modorator + "#" + id ;
+  var identity = userName + "#" + gender + "#" + modoratorOrPresentor + "#" + id ;
 
   // Create an access token which we will sign and return to the client,
   // containing the grant we just created.
@@ -319,12 +331,10 @@ else {
 }
 
 
-
-
-
 var port = process.env.PORT || 3000;
 server.listen(port, function() {
   console.log("Express server running on *:" + port);
+  serverStatus();
 });
 var io  = require('socket.io').listen(server);
 
@@ -332,7 +342,6 @@ var io  = require('socket.io').listen(server);
 io.on('connection', function(socket){
   console.log('a user connected');
   socket.on('disconnect', function(){
-    console.log('user disconnected');
   });
 
   socket.on('chat message', function(msg){
@@ -343,25 +352,22 @@ io.on('connection', function(socket){
   socket.on('start meeting', function(msg){
     console.log('message: ' + msg);
     currentRound = parseInt(msg);
-    console.log('--------------------------------- ROUND : ' + currentRound);
-    //io.emit('start meeting', msg);
+    meetingStatus = 2;
   });  
 
   socket.on('ClientTimer', function(msg){
-    console.log('ClientTimer: ' + msg);
+   // console.log('ClientTimer: ' + msg);
     io.emit('ClientTimer', msg);
   });  
 
   socket.on('buzzer', function(msg){
-    console.log('message: ' + msg);
+    //console.log('message: ' + msg);
     io.emit('buzzer', msg);
   });  
 
   socket.on('backToLobby', function(msg){
-    console.log('message: ' + msg);
-    meetingStatus = 4;
-
-    //io.emit('backToLobby', msg);
+    console.log('backToLobby: round is' + currentRound);
+    meetingStatus = 1;
   });  
 
   socket.on('unsharescreen', function(msg){
@@ -370,17 +376,19 @@ io.on('connection', function(socket){
   });  
 
   socket.on('breakRound', function(msg){
-    console.log('message: ' + msg);
-    io.emit('breakRound', msg);
+    console.log('breakRound: ' + currentRound);
+    meetingStatus = 3;
+    //io.emit('breakRound', msg);
   });  
 
   socket.on('EndOfMeeting', function(msg){
-    console.log('message: ' + msg);
-    io.emit('EndOfMeeting', msg);
+    console.log('EndOfMeeting: ' + msg);
+    meetingStatus = 5;
+    //io.emit('EndOfMeeting', msg);
   });  
 
   socket.on('clearParticipantWindow', function(msg){
-    console.log('message: ' + msg);
+    console.log('clearParticipantWindow: ' + msg);
     io.emit('clearParticipantWindow', msg);
   });  
 
@@ -397,8 +405,20 @@ io.on('connection', function(socket){
   });   
   socket.on('resetMeeteing', function(msg){
     currentRound = 0;
+    meetingStatus = 0;
+    console.log("reset meeting")
+
   });  
-  
+
+  socket.on('modoratorConnect', function(msg){
+    io.emit('modoratorConnect', msg);
+  });   
+
+  socket.on('presentorConnect', function(msg){
+    io.emit('presentorConnect', msg);
+  });   
+
+
 
   
 });
@@ -409,7 +429,7 @@ function returnMyRoom(id, userName,gender,roomsOrder,currentRound){
   var roomNumber = 0;  
   var roundNumber = currentRound;
   roomsOrder = JSON.parse(roomsOrder);
-  console.log("returnMyRoom parsing round:" + roundNumber)
+  //console.log("returnMyRoom parsing round:" + roundNumber)
   try {
     var thisRound = roomsOrder[parseInt(roundNumber) - 1]
   }
@@ -417,8 +437,8 @@ function returnMyRoom(id, userName,gender,roomsOrder,currentRound){
     console.log(err)
   }
 
-  console.log("returnMyRoom roomsOrder:" + roomsOrder)
-  console.log("returnMyRoom parsing thisRound:" + thisRound)
+  //console.log("returnMyRoom roomsOrder:" + roomsOrder)
+  //console.log("returnMyRoom parsing thisRound:" + thisRound)
   var i = 1
   if(gender == 'm') {
   thisRound.mens.forEach(idd => {
@@ -440,6 +460,14 @@ else {
 }
   return roomNumber;
 }
+
+function serverStatus() {
+  var ss = setInterval(function() {
+    var time = new Date().getTime();
+    console.log("------------------------ current Round is:" + currentRound + " ------ meeting status is:" + meetingStatus + " time:" + time);
+  },5000)
+}
+
 
 
 

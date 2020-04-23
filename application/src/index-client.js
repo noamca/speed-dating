@@ -19,6 +19,8 @@ var intervalChecker;
 var systemEventId;
 var profileExist = 0;
 
+//var noSleep = new NoSleep();
+
 
 
 
@@ -117,9 +119,7 @@ function participantConnected(participant, container) {
   container.appendChild(selfContainer);
   var identityAry = participant.identity.split("#");
   appendName(identityAry[0], selfContainer);
-  if(identityAry[2] !='1')
-    loadProfile(identityAry[3])
-
+  
   participant.tracks.forEach(function(publication) {
     trackPublished(publication, selfContainer);
   });
@@ -164,8 +164,8 @@ function connect() {
             name:  "Lobby" ,
             logLevel: "error",
             type : "group",
-            audio : false,
-            video : {width:300},
+            audio : true,
+            video : {width:600},
           };
         }
 
@@ -199,6 +199,7 @@ function roomJoined(room) {
 
   var remoteMediaContainer = document.getElementById("remote-media");
   var modorateMediaContainer = document.getElementById("modorate-media");
+  var presentorMediaContainer = document.getElementById("modorate-media");
 
   // Attach LocalParticipant's Tracks, if not already attached.
    attachTracks(getTracks(room.localParticipant), remoteMediaContainer);
@@ -208,12 +209,12 @@ function roomJoined(room) {
     log("Already in Room: '" + participant.identity + "'");
     var identityAry = participant.identity.split("#");
     otherUserId = identityAry[3]; 
-    if (identityAry[2] == "1" || r !=null) {
+    if (identityAry[2] == "1" ) {
       participantConnected(participant, modorateMediaContainer);
+    } else if (identityAry[2] == "2" ) {
+      participantConnected(participant, presentorMediaContainer);
     } else {
       participantConnected(participant, remoteMediaContainer);
-      loadProfile(otherUserId);
-      loadRemark(otherUserId);
     }
     
   });
@@ -223,15 +224,12 @@ function roomJoined(room) {
     log("Joining: '" + participant.identity + "'");
     var identityAry = participant.identity.split("#");
     otherUserId = identityAry[3]; 
-    if (identityAry[2] == "1" || r !=null) {
+    if (identityAry[2] == "1" ) {
       participantConnected(participant, modorateMediaContainer);
+    } else if (identityAry[2] == "2" ) {
+      participantConnected(participant, presentorMediaContainer);
     } else {
       participantConnected(participant, remoteMediaContainer);
-      if(parseInt(otherUserId) > 0) {
-        loadProfile(otherUserId);
-        loadRemark(otherUserId);
-      }
-
     }
   });
 
@@ -301,37 +299,31 @@ function beep() {
 
 
 
-//  Document.ready init
+//  --------------------------------------------------------------------------- Document.ready init ---------------------------------
+//  --------------------------------------------------------------------------- Document.ready init----------------------------------
+//  --------------------------------------------------------------------------- Document.ready init -----------------------------------
 $(function () {
 
+
+  enableNoSleep();
   userName = getUrlParam("userName");
   gender = getUrlParam("gender");
   id = getUrlParam("id");
   r = getUrlParam("r");
   systemEventId = getUrlParam("eventId");
 
-  url = "/token?1=1&userName=" + userName + "&gender=" + gender + "&id=" + id;
-
-  updateAttendingStatus();
-  checkPresentation();
-  connect()
-  clearRoom()
-  myLocationNow(id,userName,gender)
-
-  // update table number
-
-  if(typeof(r) !="undefined" && r!=null) {
-    document.querySelector("#tableNumber").innerText = "שולחן מספר " + roomNumber;
+  if(gender=='m') {
+    document.querySelector("#txtLobbyMessage").innerText = "הנך נמצא בלובי"
+  }
+  else {
+    document.querySelector("#txtLobbyMessage").innerText = "הנך נמצאת בלובי"
   }
 
+  url = "/token?1=1&userName=" + userName + "&gender=" + gender + "&id=" + id;
 
-  
-
-  $("#btnConnect" ).click(function() {
-    connect();
-    document.querySelector("#btnConnect").innerText = "מחובר";
-    
-  });
+  connect()
+  checkPresentation();
+  myLocationNow(id,userName,gender)
 
   $("#txtUserName").text( decodeURI(userName));
   // ------------------ All participants functions ----------------------------
@@ -353,7 +345,13 @@ $(function () {
     }
   });
 
+  socket.on('presentorConnect', function(msg){
+    document.querySelector("#modorate-media").style.display = "none"
+  })
 
+  socket.on('modoratorConnect', function(msg){
+    document.querySelector("#presentor-media").style.display = "none"
+  })
 
 
   socket.on('broadcastMessage', function(msg){
@@ -367,11 +365,6 @@ $(function () {
     toastr.warning(msg,{timeOut: 5000})
   });
 
-
-
-  
-
-  
   socket.on('startPesentation', function(msg){
     // hide presentor
     document.querySelector("#participantContainer-Modorator\\#undefined\\#1\\#\\#1586726753363 > video:nth-child(2)")
@@ -382,23 +375,22 @@ $(function () {
     .style.right = "30px";
     document.querySelector("#participantContainer-Modorator\\#undefined\\#1\\#\\#1586726753363 > video:nth-child(4)")
     .style.width = "820px";
+
+
+
+    
   });
 
   
-
-  socket.on('buzzer', function(msg){
-    beep();
-  });
-
   socket.on('EndOfMeeting', function(msg){
     document.location.href='/thanks';
   });
 
   // this event fires 30 sec before room is about to change and it will erase participant other side video & audio
-  socket.on('clearParticipantWindow', function(msg){
-    document.querySelector("#modorate-media").innerHTML="";
-    loadProfileImage(otherUserId);
-  });
+  // socket.on('clearParticipantWindow', function(msg){
+  //   document.querySelector("#modorate-media").innerHTML="";
+  //   loadProfileImage(otherUserId);
+  // });
   
   // this event fires when moderator is change and it will erase moderator video & audio
   socket.on('takeControl', function(msg){
@@ -414,60 +406,6 @@ $(function () {
   });
 
 
-//   socket.on('start meeting', function(msg){
-    
-//     $.get( "/load-participants")
-//     .done(function( data ) {
-//         var roomNumber = 0;  
-//         var roundNumber = msg;
-//         var loadedPar = JSON.parse(data);
-//         var thisRound = loadedPar[parseInt(roundNumber) - 1]
-//         if(gender == 'm') {
-//             var i = 1
-//             thisRound.mens.forEach(idd => {
-//                 if(idd.includes(decodeURI(userName))) {
-//                     let ii=i;
-//                     roomNumber = ii;
-//                 }
-//                 i++;
-//             })
-//         }
-
-//         else {
-//             var i = 1
-//             thisRound.females.forEach(idd => {
-//                 if(idd.includes(decodeURI(userName))) {
-//                     let ii=i;
-//                     roomNumber = ii;
-//                 }
-//                 i++;
-//             })
-//         }
-
-//         console.log('/room?r=' + roomNumber + "&userName=" + userName +  "&gender=" + gender + "&id=" + id +  "&auto_connect=1");
-//         document.location.href='/room?r=' + roomNumber + "&userName=" + userName +  "&gender=" + gender + "&id=" + id + "&auto_connect=1";
-//     });
-// });
-
-
-socket.on('backToLobby', function(msg){
-    document.location.href="/application/lobby.html?userName=" + userName +  "&gender=" + gender + "&id=" + id;
-  });
-
-
-if(saveRemark != null) {
-    saveRemark.onclick = function() {
-        var remark = document.querySelector("#messageTxt").value
-        remarkId = parseInt(remarkId);
-        if (isNaN(remarkId)) {remarkId=0}
-        $.get( "/save-rem?id=" + id + "&user_id=" + otherUserId + "&remark=" + remark + '&remark_id=' + remarkId)
-        .done(function(data) {
-          if (data) {
-            remarkId = data.result
-          }
-        }) 
-    };
-  }
 
 /// --- end document ready
 });
@@ -495,111 +433,17 @@ function setCookie(cname, cvalue, exdays) {
     return "";
   } 
   
-  function loadRemark(otherUserId){ 
-    $.get( "/read-rem?id=" + id + "&user_id=" + otherUserId )
-    .done(function(data) {
-      if (data) {
-        remarkId = data.remarkId
-      }
-    }) 
-  }
-
-
-
-  function loadProfileImage(id) {
-    $.get( "/profileImage?id=" + id)
-    .done(function(data) {
-      var img = document.createElement('img');
-      img.src = "http://www.speedateisrael.co.il/profile-pictures/" + data.file_name;
-      img.style.width="600px";
-      document.querySelector("#modorate-media").appendChild(img);
-    })
-  }
-  
-
-
-  function loadProfile(id) {
-
-    $.get( "/profile?id=" + id)
-      .done(function( data ) {
-        if(profileExist == 0) {
-        var i = 1;
-        var profileContents = document.getElementById("profileContents");
-        if(data.bearth_year_public == '1') {
-          appendProfileElement(i,'',profileContents,"newLine");
-          var row = document.getElementById("profile-" + i);
-          appendProfileElement('birthYearLabel','שנת לידה',row,"text2")
-          appendProfileElement('birthYearLabel', data.bearth_year,row,"text")
-        }
-        i++;
-
-        if(data.relationship_public == '1') {
-          appendProfileElement(i,'',profileContents,"newLine");
-          var row = document.getElementById("profile-" + i);
-          appendProfileElement('birthYearLabel','מצב משפחתי',row,"text2")
-          appendProfileElement('birthYearLabel', data.relationship,row,"text")
-        }i++;
-
-        if(data.height_public == '1') {
-          appendProfileElement(i,'',profileContents,"newLine");
-          var row = document.getElementById("profile-" + i);
-          appendProfileElement('birthYearLabel','גובה',row,"text2")
-          appendProfileElement('birthYearLabel', data.height,row,"text")
-        }i++;
-
-        if(data.has_kids_public == '1') {
-          appendProfileElement(i,'',profileContents,"newLine");
-          var row = document.getElementById("profile-" + i);
-          appendProfileElement('birthYearLabel','ילדים',row,"text2")
-          appendProfileElement('birthYearLabel', data.has_kids,row,"text")
-        }i++;
-
-        if(data.education_public == '1') {
-          appendProfileElement(i,'',profileContents,"newLine");
-          var row = document.getElementById("profile-" + i);
-          appendProfileElement('birthYearLabel','השכלה',row,"text2")
-          appendProfileElement('birthYearLabel', data.education,row,"text")
-        }i++;
-
-        if(data.proffesion_public == '1') {
-          appendProfileElement(i,'',profileContents,"newLine");
-          var row = document.getElementById("profile-" + i);
-          appendProfileElement('birthYearLabel','עיסוק',row,"text2")
-          appendProfileElement('birthYearLabel', data.proffesion,row,"text")
-        }i++;
-
-        if(data.smoke_public == '1') {
-          appendProfileElement(i,'',profileContents,"newLine");
-          var row = document.getElementById("profile-" + i);
-          appendProfileElement('birthYearLabel','מעשן/ת',row,"text2")
-          appendProfileElement('birthYearLabel', data.smoke,row,"text")
-        }i++;
-        profileExist = 1;
-      }
-        
-    });
-  }
-
-  function makeid(length) {
-    var result           = '';
-    var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    var charactersLength = characters.length;
-    for ( var i = 0; i < length; i++ ) {
-       result += characters.charAt(Math.floor(Math.random() * charactersLength));
-    }
-    return result;
- }
-
-
-
-
-
-
-
+    
 function checkPresentation() {
   intervalChecker = setInterval(function() {
     if(document.querySelector("#modorate-media>div>video:nth-child(4)")) {
-      
+
+      var manager = document.querySelector("#participantContainer-Modorator2\\#undefined\\#1\\# > video")
+      if(typeof(manager) != 'undefined' && presentor != null) {
+        manager.style.width = "150px";
+        manager.style.position = "absolute";
+        manager.style.right = "30px";
+      }
       var presentor = document.querySelector("#modorate-media>div>video:nth-child(2)")
       if(typeof(presentor) != 'undefined' && presentor != null) {
           presentor.style.width = "150px";
@@ -637,36 +481,25 @@ function checkPresentation() {
   },1000);
 }
 
-function updateAttendingStatus() {
-  $.get("/updateStatus?user_id=" + id + "&event_id=" + systemEventId);
-  if(typeof roomNumber != 'undefined')
-    document.querySelector("tableNumber").text = " הנך נמצא בשולחן מספר " + roomNumber;
-}
-
-
-function clearRoom() {
-  if(r!="" && r != null) {
-    if(document.querySelector("profileContents") != null)
-      document.querySelector("profileContents").innerHTML = ""
-  }
-  if(document.querySelector("modorator-media") !=null ) {
-    document.querySelector("modorator-media").innerHTML=""
-  }
-  
-}
-
 
 function myLocationNow(id,userName,gender) {
   var intervalLocation = setInterval(function() {
     $.get( "/myLocationNow?id=" + id + "&userName=" + userName +  "&gender=" + gender)
     .done(function(data) {
       if(decodeURI(document.location.href)!=decodeURI(data)) {
-        document.location.href=data
+        // leaveRoomIfJoined();
+        document.location.href=data 
+        
       }
   
     })
 
-  },5000)
+  },1000)
+}
+
+function enableNoSleep() {
+  noSleep.enable();
+  document.removeEventListener('touchstart', enableNoSleep, false);
 }
 
 
