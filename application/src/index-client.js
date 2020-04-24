@@ -199,7 +199,7 @@ function roomJoined(room) {
 
   var remoteMediaContainer = document.getElementById("remote-media");
   var modorateMediaContainer = document.getElementById("modorate-media");
-  var presentorMediaContainer = document.getElementById("modorate-media");
+  var presentorMediaContainer = document.getElementById("presentor-media");
 
   // Attach LocalParticipant's Tracks, if not already attached.
    attachTracks(getTracks(room.localParticipant), remoteMediaContainer);
@@ -210,8 +210,12 @@ function roomJoined(room) {
     var identityAry = participant.identity.split("#");
     otherUserId = identityAry[3]; 
     if (identityAry[2] == "1" ) {
+   //   document.querySelector("#modorate-media").style.display = "block"
+   //   document.querySelector("#presentor-media").style.display = "none"
       participantConnected(participant, modorateMediaContainer);
     } else if (identityAry[2] == "2" ) {
+   //   document.querySelector("#modorate-media").style.display = "none"
+   //   document.querySelector("#presentor-media").style.display = "block"
       participantConnected(participant, presentorMediaContainer);
     } else {
       participantConnected(participant, remoteMediaContainer);
@@ -225,8 +229,12 @@ function roomJoined(room) {
     var identityAry = participant.identity.split("#");
     otherUserId = identityAry[3]; 
     if (identityAry[2] == "1" ) {
+      document.querySelector("#modorate-media").style.display = "block"
+      document.querySelector("#presentor-media").style.display = "none"
       participantConnected(participant, modorateMediaContainer);
     } else if (identityAry[2] == "2" ) {
+      document.querySelector("#modorate-media").style.display = "none"
+      document.querySelector("#presentor-media").style.display = "block"
       participantConnected(participant, presentorMediaContainer);
     } else {
       participantConnected(participant, remoteMediaContainer);
@@ -347,10 +355,12 @@ $(function () {
 
   socket.on('presentorConnect', function(msg){
     document.querySelector("#modorate-media").style.display = "none"
+    document.querySelector("#presentor-media").style.display = "block"
   })
 
   socket.on('modoratorConnect', function(msg){
     document.querySelector("#presentor-media").style.display = "none"
+    document.querySelector("#modorate-media").style.display = "block"
   })
 
 
@@ -436,15 +446,16 @@ function setCookie(cname, cvalue, exdays) {
     
 function checkPresentation() {
   intervalChecker = setInterval(function() {
-    if(document.querySelector("#modorate-media>div>video:nth-child(4)")) {
+   // return false;
+    if(document.querySelector("#presentor-media>div>video:nth-child(4)")) {
 
-      var manager = document.querySelector("#participantContainer-Modorator2\\#undefined\\#1\\# > video")
+      var manager = document.querySelector("#participantContainer-Modorator\\#undefined\\#1\\# > video")
       if(typeof(manager) != 'undefined' && presentor != null) {
         manager.style.width = "150px";
         manager.style.position = "absolute";
         manager.style.right = "30px";
       }
-      var presentor = document.querySelector("#modorate-media>div>video:nth-child(2)")
+      var presentor = document.querySelector("#presentor-media>div>video:nth-child(2)")
       if(typeof(presentor) != 'undefined' && presentor != null) {
           presentor.style.width = "150px";
           presentor.style.position = "absolute";
@@ -452,7 +463,7 @@ function checkPresentation() {
           document.querySelector("#modorate-media>div>video:nth-child(4)").style.width = "640px";
       }
       else {
-        var presentor = document.querySelector("#modorate-media>div>video:nth-child(3)")
+        var presentor = document.querySelector("#presentor-media>div>video:nth-child(3)")
         if(typeof presentor != 'undefined'  && presentor != null) {
           presentor.style.width = "150px";
           presentor.style.position = "absolute";
@@ -475,6 +486,8 @@ function checkPresentation() {
           presentor.style.position = "relative";
           presentor.style.right = "0px";
         }
+
+       
       }      
     }
 

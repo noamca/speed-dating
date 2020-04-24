@@ -359,13 +359,14 @@ $(function () {
   connect();
 
  
-
-  if(modorator!="") {
-    socket.emit("modoratorConnect");
-  }
-
+  // Disable some buttons
   if(presentor!="") {
-    socket.emit("presentorConnect");
+    document.querySelector("#btnSetRooms").style.display = "none"
+    document.querySelector("#button-start-meeting").style.display = "none"
+    document.querySelector("#buttonBreak").style.display = "none"
+    document.querySelector("#buttonContinueMeetings").style.display = "none"
+    document.querySelector("#stopConversation").style.display = "none"
+    document.querySelector("#startConversation").style.display = "none"
   }
 
 
@@ -405,7 +406,13 @@ $(function () {
   });
 
   $("#btnTakeControl" ).click(function() {
-    socket.emit("takeControl",userName);
+    if(modorator!="") {
+      socket.emit("modoratorConnect");
+    }
+    else {
+      socket.emit("presentorConnect");
+    }
+
   });
 
   

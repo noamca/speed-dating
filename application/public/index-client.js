@@ -200,7 +200,7 @@ function roomJoined(room) {
 
   var remoteMediaContainer = document.getElementById("remote-media");
   var modorateMediaContainer = document.getElementById("modorate-media");
-  var presentorMediaContainer = document.getElementById("modorate-media");
+  var presentorMediaContainer = document.getElementById("presentor-media");
 
   // Attach LocalParticipant's Tracks, if not already attached.
    attachTracks(getTracks(room.localParticipant), remoteMediaContainer);
@@ -211,8 +211,12 @@ function roomJoined(room) {
     var identityAry = participant.identity.split("#");
     otherUserId = identityAry[3]; 
     if (identityAry[2] == "1" ) {
+   //   document.querySelector("#modorate-media").style.display = "block"
+   //   document.querySelector("#presentor-media").style.display = "none"
       participantConnected(participant, modorateMediaContainer);
     } else if (identityAry[2] == "2" ) {
+   //   document.querySelector("#modorate-media").style.display = "none"
+   //   document.querySelector("#presentor-media").style.display = "block"
       participantConnected(participant, presentorMediaContainer);
     } else {
       participantConnected(participant, remoteMediaContainer);
@@ -226,8 +230,12 @@ function roomJoined(room) {
     var identityAry = participant.identity.split("#");
     otherUserId = identityAry[3]; 
     if (identityAry[2] == "1" ) {
+      document.querySelector("#modorate-media").style.display = "block"
+      document.querySelector("#presentor-media").style.display = "none"
       participantConnected(participant, modorateMediaContainer);
     } else if (identityAry[2] == "2" ) {
+      document.querySelector("#modorate-media").style.display = "none"
+      document.querySelector("#presentor-media").style.display = "block"
       participantConnected(participant, presentorMediaContainer);
     } else {
       participantConnected(participant, remoteMediaContainer);
@@ -348,10 +356,12 @@ $(function () {
 
   socket.on('presentorConnect', function(msg){
     document.querySelector("#modorate-media").style.display = "none"
+    document.querySelector("#presentor-media").style.display = "block"
   })
 
   socket.on('modoratorConnect', function(msg){
     document.querySelector("#presentor-media").style.display = "none"
+    document.querySelector("#modorate-media").style.display = "block"
   })
 
 
@@ -437,6 +447,7 @@ function setCookie(cname, cvalue, exdays) {
     
 function checkPresentation() {
   intervalChecker = setInterval(function() {
+    return false;
     if(document.querySelector("#modorate-media>div>video:nth-child(4)")) {
 
       var manager = document.querySelector("#participantContainer-Modorator2\\#undefined\\#1\\# > video")
